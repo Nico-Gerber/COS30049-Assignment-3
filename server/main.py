@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import predict_route
+from routes import predict_route, visual_route
 
 app = FastAPI(
     title="Misinformation Detection API",
@@ -11,7 +11,8 @@ app = FastAPI(
 # Enable CORS (allow React frontend to communicate)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], 
+    # Allow the common dev frontend origins (localhost and 127.0.0.1)
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,6 +20,7 @@ app.add_middleware(
 
 # Include route modules
 app.include_router(predict_route.router)
+app.include_router(visual_route.router)
 
 @app.get("/")
 def root():

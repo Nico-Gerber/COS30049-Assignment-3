@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Grid, Box, Card, CardContent, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { Bar, Pie, Line } from 'react-chartjs-2';
+import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -127,6 +127,28 @@ const Insights = () => {
     ]
   };
 
+  // Third Chart - Confidence Distribution (Doughnut Chart)
+  const confidenceData = {
+    labels: ['Very High (>0.9)', 'High (0.7-0.9)', 'Medium (0.5-0.7)', 'Low (<0.5)'],
+    datasets: [{
+      data: [45, 89, 67, 23],
+      backgroundColor: [
+        '#4CAF50', // Green for very high confidence
+        '#2196F3', // Blue for high confidence
+        '#FF9800', // Orange for medium confidence
+        '#F44336'  // Red for low confidence
+      ],
+      hoverBackgroundColor: [
+        '#45A049',
+        '#1976D2',
+        '#F57C00',
+        '#D32F2F'
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  };
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -251,13 +273,26 @@ const Insights = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={12} md={6}>
           <Paper sx={{ p: { xs: 3, sm: 4 } }}>
             <Typography variant="h5" gutterBottom>
               Detection Trends Over Time
             </Typography>
             <Box sx={{ height: 400 }}>
               <Line data={trendData} options={chartOptions} />
+            </Box>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
+            <Typography variant="h5" gutterBottom>
+              Confidence Distribution
+            </Typography>
+            <Box sx={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ width: '300px', height: '300px' }}>
+                <Doughnut data={confidenceData} options={{ ...chartOptions, maintainAspectRatio: false }} />
+              </div>
             </Box>
           </Paper>
         </Grid>

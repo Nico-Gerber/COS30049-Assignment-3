@@ -7,14 +7,56 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const MisinformationDetector = () => {
   const [tweets, setTweets] = useState([
-    { id: Date.now(), text: '', loading: false, result: null, error: null },
+    { id: Date.now(), text: '', loading: false, result: null, error: null, validation: {} },
   ]);
+
+  // Enhanced validation function
+  const validateTweet = (text) => {
+    const errors = {};
+    const warnings = {};
+    
+    // Required validation
+    if (!text.trim()) {
+      errors.required = 'Tweet text is required';
+    }
+    
+    // Length validation
+    if (text.length < 10) {
+      warnings.minLength = 'Tweet is very short (less than 10 characters)';
+    }
+    if (text.length > 280) {
+      errors.maxLength = 'Tweet exceeds 280 characters';
+    }
+    
+    // Content validation
+    if (text.trim().length < 5) {
+      errors.content = 'Tweet must contain meaningful content';
+    }
+    
+    // URL detection
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    if (urlRegex.test(text)) {
+      warnings.hasUrls = 'Tweet contains URLs - may affect analysis accuracy';
+    }
+    
+    // Excessive punctuation
+    const excessivePunc = /[!?]{3,}/g;
+    if (excessivePunc.test(text)) {
+      warnings.punctuation = 'Excessive punctuation detected';
+    }
+    
+    return { errors, warnings, isValid: Object.keys(errors).length === 0 };
+  };
 
   const analyzeItem = async (id) => {
     setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: true, error: null, result: null } : t)));
     const item = tweets.find((t) => t.id === id);
-    if (!item || !item.text.trim()) {
-      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: 'Please enter a tweet.' } : t)));
+    
+    // Enhanced validation
+    const validation = validateTweet(item.text);
+    if (!validation.isValid) {
+      const errorMessages = Object.values(validation.errors).join('; ');
+      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: errorMessages, validation } : t)));
       return;
     }
 
@@ -79,7 +121,8 @@ const MisinformationDetector = () => {
   };
 
   const updateText = (id, text) => {
-    setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
+    const validation = validateTweet(text);
+    setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, text, validation } : t)));
   };
 
   return (
@@ -106,12 +149,25 @@ const MisinformationDetector = () => {
             {tweets.map((t, idx) => (
               <Box key={t.id} sx={{ mb: 2, position: 'relative' }}>
                 <TextField
-                  label={`Tweet ${idx + 1}`}
+                  label={`Tweet ${idx + 1} ${t.text.length > 0 ? `(${t.text.length}/280)` : ''}`}
                   multiline
                   rows={3}
                   fullWidth
                   value={t.text}
                   onChange={(e) => updateText(t.id, e.target.value)}
+                  error={t.validation?.errors && Object.keys(t.validation.errors).length > 0}
+                  helperText={
+                    t.validation?.errors && Object.keys(t.validation.errors).length > 0
+                      ? Object.values(t.validation.errors)[0]
+                      : t.validation?.warnings && Object.keys(t.validation.warnings).length > 0
+                      ? Object.values(t.validation.warnings)[0]
+                      : 'Enter tweet content to analyze for misinformation'
+                  }
+                  color={
+                    t.validation?.warnings && Object.keys(t.validation.warnings).length > 0
+                      ? 'warning'
+                      : 'primary'
+                  }
                 />
                 <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
                   <Button size="small" onClick={() => analyzeItem(t.id)} disabled={t.loading}>Analyze</Button>

@@ -1,9 +1,14 @@
 /* App Root Styles */
 .app-root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   padding-top: 20px;
-  padding-bottom: 40px;
   overflow-x: hidden;
+}
+
+.app-root > *:not(footer) {
+  flex: 1;
 }
 
 /* Home Page Animations */
@@ -172,9 +177,31 @@
   }
 }
 
+/* Footer Specific Styles */
+.footer-container {
+  margin-top: auto;
+  position: relative;
+}
+
+.footer-tech-chip {
+  transition: all 0.3s ease;
+}
+
+.footer-tech-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.footer-link-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-link-hover:hover {
+  transform: translateX(5px) scale(1.05);
+}
+
 @media (max-width: 480px) {
   .app-root {
     padding-top: 12px;
-    padding-bottom: 20px;
   }
 }

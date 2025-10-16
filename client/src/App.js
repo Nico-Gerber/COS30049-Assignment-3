@@ -7,6 +7,7 @@ import './theme.css';
 
 // Import components and pages
 import Navigation from './components/Navigation';
+import Footer from './components/footer';
 import Home from './pages/home';
 import About from './pages/about';
 import Insights from './pages/insights';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/detector" element={<MisinformationDetector />} />
             <Route path="/history" element={<AnalysisHistory />} />
           </Routes>
+          <Footer />
         </div>
       </Router>
     </ThemeProvider>

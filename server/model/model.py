@@ -87,14 +87,14 @@ def postprocess_prediction(label: str, confidence: float) -> Tuple[str, float]:
     """
     # Normalize label names for consistent display
     label_mapping = {
-        'fake': 'Fake News',
-        'real': 'Real News',
-        'true': 'Real News',
-        'false': 'Fake News',
-        '0': 'Real News',
-        '1': 'Fake News',
-        0: 'Real News',
-        1: 'Fake News'
+        'fake': 'Fake',
+        'real': 'Real',
+        'true': 'Real',
+        'false': 'Fake',
+        '0': 'Real',
+        '1': 'Fake',
+        0: 'Real',
+        1: 'Fake'
     }
     
     # Convert label to string and normalize

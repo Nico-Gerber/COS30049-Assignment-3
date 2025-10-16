@@ -99,7 +99,7 @@ const Insights = () => {
   };
 
   const accuracyData = {
-    labels: ['Fake News Detection', 'Real News Detection'],
+    labels: ['Fake Detection', 'Real Detection'],
     datasets: [{
       data: [misinformationStats.fake, misinformationStats.real],
       backgroundColor: ['#FF6B6B', '#4ECDC4'],
@@ -111,14 +111,14 @@ const Insights = () => {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
-        label: 'Fake News Detected',
+        label: 'Fake Detected',
         data: [12, 19, 15, 25, 22, 18, 14],
         borderColor: 'rgb(255, 99, 132)',
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
         tension: 0.1
       },
       {
-        label: 'Real News Verified',
+        label: 'Real Verified',
         data: [45, 52, 48, 61, 58, 55, 49],
         borderColor: 'rgb(75, 192, 192)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',

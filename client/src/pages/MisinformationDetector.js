@@ -46,13 +46,7 @@ const MisinformationDetector = () => {
     'Breaking: New study proves drinking water causes growth in brain size!',
     'Celebrity X endorses miracle cure — doctors baffled!',
     'Local community garden hosts free workshop this weekend.',
-    'Elections coming up: make sure to verify your sources before sharing.',
-    'New policy proposal aims to reduce carbon emissions by 40% in 10 years.',
-    'Viral video claims this pill cures all diseases — experts warn against it.',
-    'Study shows moderate coffee consumption linked to lower mortality risk.',
-    'Local school receives grant for STEM programs — open day next Saturday.',
-    'Scientists discover potential new exoplanet in habitable zone.',
-    "Rumor: City will ban all scooters next month — official statement pending.",
+    'Elections coming up: make sure to verify your sources before sharing.'
   ];
 
   const applySample = (t) => {

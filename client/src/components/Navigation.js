@@ -9,7 +9,8 @@ const Navigation = () => {
     { label: 'Home', path: '/' },
     { label: 'About', path: '/about' },
     { label: 'Insights', path: '/insights' },
-    { label: 'Misinformation Detector', path: '/detector' }
+    { label: 'Detector', path: '/detector' },
+    { label: 'History', path: '/history' }
   ];
 
   return (

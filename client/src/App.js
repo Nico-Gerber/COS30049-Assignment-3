@@ -11,6 +11,7 @@ import Home from './pages/home';
 import About from './pages/about';
 import Insights from './pages/insights';
 import MisinformationDetector from './pages/MisinformationDetector';
+import AnalysisHistory from './pages/AnalysisHistory';
 
 // Create a theme
 const theme = createTheme({
@@ -36,6 +37,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/detector" element={<MisinformationDetector />} />
+            <Route path="/history" element={<AnalysisHistory />} />
           </Routes>
         </div>
       </Router>

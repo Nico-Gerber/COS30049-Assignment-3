@@ -29,13 +29,48 @@ ChartJS.register(
 
 const Insights = () => {
   const [timeRange, setTimeRange] = useState('week');
+  const [misinformationStats, setMisinformationStats] = useState({
+    total: 0,
+    fake: 0,
+    real: 0,
+    accuracy: 0
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Sample data - in a real application, this would come from your API
-  const misinformationStats = {
-    total: 1247,
-    fake: 312,
-    real: 935,
-    accuracy: 87.3
+  // GET - Fetch real statistics from API
+  const fetchStatistics = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/predict/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setMisinformationStats({
+          total: data.total_analyses,
+          fake: data.fake_count,
+          real: data.real_count,
+          accuracy: data.avg_confidence * 100 // Convert to percentage
+        });
+      } else {
+        // Fallback to sample data if API fails
+        setMisinformationStats({
+          total: 1247,
+          fake: 312,
+          real: 935,
+          accuracy: 87.3
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
+      // Fallback to sample data
+      setMisinformationStats({
+        total: 1247,
+        fake: 312,
+        real: 935,
+        accuracy: 87.3
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const categoryData = {
@@ -100,6 +135,15 @@ const Insights = () => {
       },
     },
   };
+
+  // useEffect to fetch data when component mounts
+  useEffect(() => {
+    fetchStatistics();
+    
+    // Optionally refetch data periodically
+    const interval = setInterval(fetchStatistics, 30000); // Every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>

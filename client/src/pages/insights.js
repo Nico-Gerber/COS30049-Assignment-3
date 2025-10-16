@@ -102,8 +102,8 @@ const Insights = () => {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 5 }}>
         <Typography variant="h3" component="h1" gutterBottom align="center">
           Detection Insights & Analytics
         </Typography>
@@ -113,10 +113,10 @@ const Insights = () => {
       </Paper>
 
       {/* Key Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 5 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
               <Typography color="text.secondary" gutterBottom>
                 Total Analyzed
               </Typography>
@@ -128,7 +128,7 @@ const Insights = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
               <Typography color="text.secondary" gutterBottom>
                 Fake Detected
               </Typography>
@@ -140,7 +140,7 @@ const Insights = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
               <Typography color="text.secondary" gutterBottom>
                 Real Verified
               </Typography>
@@ -152,7 +152,7 @@ const Insights = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
+            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
               <Typography color="text.secondary" gutterBottom>
                 Accuracy
               </Typography>
@@ -182,9 +182,9 @@ const Insights = () => {
       </Box>
 
       {/* Charts */}
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 3, md: 4 }} sx={{ mb: 5 }}>
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
             <Typography variant="h5" gutterBottom>
               Misinformation by Category
             </Typography>
@@ -195,7 +195,7 @@ const Insights = () => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
             <Typography variant="h5" gutterBottom>
               Detection Accuracy
             </Typography>
@@ -208,7 +208,7 @@ const Insights = () => {
         </Grid>
 
         <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
             <Typography variant="h5" gutterBottom>
               Detection Trends Over Time
             </Typography>
@@ -220,7 +220,7 @@ const Insights = () => {
       </Grid>
 
       {/* Insights Summary */}
-      <Paper sx={{ p: 3, mt: 4 }}>
+      <Paper sx={{ p: { xs: 3, sm: 4 }, mt: 6, mb: 4 }}>
         <Typography variant="h5" gutterBottom>
           Key Insights
         </Typography>

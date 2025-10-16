@@ -4,8 +4,8 @@ import { CheckCircle, School, Code, Analytics } from '@mui/icons-material';
 
 const About = () => {
   return (
-    <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 5 }}>
         <Typography variant="h3" component="h1" gutterBottom align="center">
           About This Project
         </Typography>
@@ -14,9 +14,9 @@ const About = () => {
         </Typography>
       </Paper>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 3, md: 4 }}>
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
             <Typography variant="h4" gutterBottom>
               Project Overview
             </Typography>
@@ -32,7 +32,7 @@ const About = () => {
             </Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, mb: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
             <Typography variant="h4" gutterBottom>
               How It Works
             </Typography>
@@ -81,7 +81,7 @@ const About = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, mb: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
             <Typography variant="h5" gutterBottom>
               <School sx={{ mr: 1, verticalAlign: 'middle' }} />
               Academic Context
@@ -98,7 +98,7 @@ const About = () => {
             </Typography>
           </Paper>
 
-          <Paper sx={{ p: 3, mb: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
             <Typography variant="h5" gutterBottom>
               <Code sx={{ mr: 1, verticalAlign: 'middle' }} />
               Technical Stack
@@ -118,7 +118,7 @@ const About = () => {
             </Typography>
           </Paper>
 
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
             <Typography variant="h5" gutterBottom>
               <Analytics sx={{ mr: 1, verticalAlign: 'middle' }} />
               Key Features
@@ -145,8 +145,8 @@ const About = () => {
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 4, textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
+      <Box sx={{ mt: 8, mb: 4, textAlign: 'center', px: { xs: 2, sm: 4 } }}>
+        <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
           This project demonstrates the application of machine learning and web technologies 
           to address real-world challenges in information verification and digital literacy.
         </Typography>

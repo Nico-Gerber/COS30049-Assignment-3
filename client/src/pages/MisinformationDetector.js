@@ -89,8 +89,8 @@ const MisinformationDetector = () => {
   };
 
   return (
-    <Container maxWidth="md">
-      <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+    <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
+      <Paper elevation={3} sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 5 }}>
         <Typography variant="h3" component="h1" gutterBottom align="center">
           Misinformation Detector
         </Typography>

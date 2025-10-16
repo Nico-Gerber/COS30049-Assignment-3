@@ -1,12 +1,14 @@
 /* App Root Styles */
 .app-root {
   min-height: 100vh;
+  padding-top: 20px;
+  padding-bottom: 40px;
 }
 
 /* Tweet Card Styles */
 .tweet-card {
-  padding: 24px !important;
-  margin-bottom: 24px;
+  padding: 32px !important;
+  margin-bottom: 32px;
   background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.96)) !important;
 }
 
@@ -97,16 +99,31 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .app-root {
+    padding-top: 16px;
+    padding-bottom: 24px;
+  }
+  
   .tweet-card {
-    padding: 16px !important;
-    margin: 16px 8px !important;
+    padding: 20px !important;
+    margin: 16px 8px 24px 8px !important;
   }
   
   .sample-list {
     flex-direction: column;
+    margin: 20px 0;
+    padding: 12px;
   }
   
   .sample-item {
     max-width: none;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-root {
+    padding-top: 12px;
+    padding-bottom: 20px;
   }
 }

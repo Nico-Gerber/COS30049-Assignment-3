@@ -1,156 +1,45 @@
-import React, { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Paper, CircularProgress, Alert, IconButton, Fab } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import ClearIcon from '@mui/icons-material/Clear';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
+import './App.css';
+import './theme.css';
+
+// Import components and pages
+import Navigation from './components/Navigation';
+import Home from './pages/home';
+import About from './pages/about';
+import Insights from './pages/insights';
+import MisinformationDetector from './pages/MisinformationDetector';
+
+// Create a theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
 
 function App() {
-  const [tweets, setTweets] = useState([
-    { id: Date.now(), text: '', loading: false, result: null, error: null },
-  ]);
-
-  const analyzeItem = async (id) => {
-    setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: true, error: null, result: null } : t)));
-    const item = tweets.find((t) => t.id === id);
-    if (!item || !item.text.trim()) {
-      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: 'Please enter a tweet.' } : t)));
-      return;
-    }
-
-    try {
-      const res = await fetch('http://127.0.0.1:8000/predict/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: item.text }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Server returned ${res.status}`);
-      }
-      const data = await res.json();
-      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, result: data, error: null } : t)));
-    } catch (e) {
-      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: String(e.message || e) } : t)));
-    }
-  };
-
-  const analyzeAll = async () => {
-    for (const t of tweets) {
-      // eslint-disable-next-line no-await-in-loop
-      await analyzeItem(t.id);
-    }
-  };
-
-  const sampleTweets = [
-    'Breaking: New study proves drinking water causes growth in brain size!',
-    'Celebrity X endorses miracle cure — doctors baffled!',
-    'Local community garden hosts free workshop this weekend.',
-    'Elections coming up: make sure to verify your sources before sharing.',
-    'New policy proposal aims to reduce carbon emissions by 40% in 10 years.',
-    'Viral video claims this pill cures all diseases — experts warn against it.',
-    'Study shows moderate coffee consumption linked to lower mortality risk.',
-    'Local school receives grant for STEM programs — open day next Saturday.',
-    'Scientists discover potential new exoplanet in habitable zone.',
-    "Rumor: City will ban all scooters next month — official statement pending.",
-  ];
-
-  const applySample = (t) => {
-    // apply sample to first empty tweet slot or append
-    const firstEmpty = tweets.find((x) => !x.text.trim());
-    if (firstEmpty) {
-      setTweets((prev) => prev.map((x) => (x.id === firstEmpty.id ? { ...x, text: t } : x)));
-    } else {
-      setTweets((prev) => [...prev, { id: Date.now() + Math.random(), text: t, loading: false, result: null, error: null }]);
-    }
-  };
-
-  const copyResult = async (id) => {
-    const it = tweets.find((t) => t.id === id);
-    if (!it || !it.result) return;
-    const text = `Prediction: ${it.result.prediction} (confidence: ${(it.result.confidence ?? 0).toFixed(3)})`;
-    try { await navigator.clipboard.writeText(text); } catch (e) { /* ignore */ }
-  };
-
-  const clearItem = (id) => {
-    setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, text: '', result: null, error: null } : t)));
-  };
-
-  const addTweet = () => {
-    setTweets((prev) => [...prev, { id: Date.now() + Math.random(), text: '', loading: false, result: null, error: null }]);
-  };
-
-  const removeTweet = (id) => {
-    setTweets((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const updateText = (id, text) => {
-    setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
-  };
-
   return (
-    <div className="app-root">
-      <Container maxWidth="md">
-        <Paper className="tweet-card" elevation={3}>
-          <div className="accent-bar" />
-          <Typography className="tweet-title" variant="h5" gutterBottom>
-            Tweet Analyzer
-          </Typography>
-          <Typography className="tweet-subtitle" variant="body2" color="text.secondary" gutterBottom>
-            Paste a tweet below and click Analyze to detect misinformation.
-          </Typography>
-          <div>
-            <div className="tweet-inputs">
-              {tweets.map((t, idx) => (
-                <Box key={t.id} sx={{ mb: 2, position: 'relative' }}>
-                  <TextField
-                    label={`Tweet ${idx + 1}`}
-                    multiline
-                    rows={3}
-                    fullWidth
-                    value={t.text}
-                    onChange={(e) => updateText(t.id, e.target.value)}
-                  />
-                  <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
-                    <Button size="small" onClick={() => analyzeItem(t.id)} disabled={t.loading}>Analyze</Button>
-                    <IconButton size="small" onClick={() => copyResult(t.id)} disabled={!t.result}><ContentCopyIcon fontSize="small"/></IconButton>
-                    <IconButton size="small" onClick={() => clearItem(t.id)}><ClearIcon fontSize="small"/></IconButton>
-                    <IconButton size="small" onClick={() => removeTweet(t.id)}><DeleteIcon fontSize="small"/></IconButton>
-                    {t.loading && <CircularProgress size={18} />}
-                  </Box>
-
-                  {t.error && <Alert severity="error" sx={{ mt: 1 }}>{t.error}</Alert>}
-
-                  {t.result && (
-                    <div className="result-box">
-                      <Typography className="prediction-label" variant="subtitle2">Prediction</Typography>
-                      <Typography variant="body1">{String(t.result.prediction)}</Typography>
-                      <div style={{display:'flex',gap:8,alignItems:'center',marginTop:8}}>
-                        <span className={`verdict ${String(t.result.prediction).toLowerCase().includes('fake') ? 'false' : 'true'}`}>{String(t.result.prediction)}</span>
-                        <Typography className="confidence" variant="body2">Confidence: {(t.result.confidence ?? 0).toFixed(3)}</Typography>
-                      </div>
-                    </div>
-                  )}
-                </Box>
-              ))}
-            </div>
-
-            <div className="sample-list">
-              {sampleTweets.map((s) => (
-                <div key={s} className="sample-item" title={s} onClick={() => applySample(s)}>{s.length > 48 ? s.slice(0,48) + '…' : s}</div>
-              ))}
-            </div>
-
-            <Box className="action-row" sx={{ mt: 2 }}>
-              <Button variant="contained" onClick={analyzeAll}>Analyze All</Button>
-              <Fab size="small" color="primary" onClick={addTweet} aria-label="add" sx={{ ml: 'auto' }}>
-                <AddIcon />
-              </Fab>
-            </Box>
-          </div>
-        </Paper>
-      </Container>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <div className="app-root">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/detector" element={<MisinformationDetector />} />
+          </Routes>
+        </div>
+      </Router>
+    </ThemeProvider>
   );
 }
 

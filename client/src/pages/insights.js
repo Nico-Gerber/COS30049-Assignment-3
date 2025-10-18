@@ -48,7 +48,7 @@ const Insights = () => {
           total: data.total_analyses,
           fake: data.fake_count,
           real: data.real_count,
-          accuracy: data.avg_confidence * 100 // Convert to percentage
+          accuracy: Math.round(data.avg_confidence * 100) // Convert to percentage and round to 2 decimal places
         });
       } else {
         // Fallback to sample data if API fails
@@ -227,7 +227,7 @@ const Insights = () => {
                 Accuracy
               </Typography>
               <Typography variant="h3" component="div" color="primary.main" sx={{ fontWeight: 'bold' }}>
-                {misinformationStats.accuracy}%
+                {misinformationStats.accuracy.toFixed(2)}%
               </Typography>
             </CardContent>
           </Card>

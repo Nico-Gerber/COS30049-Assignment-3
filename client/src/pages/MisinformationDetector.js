@@ -4,6 +4,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ClearIcon from '@mui/icons-material/Clear';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
 
 const MisinformationDetector = () => {
   const [tweets, setTweets] = useState([
@@ -61,19 +62,36 @@ const MisinformationDetector = () => {
     }
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/predict/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: item.text }),
+      const response = await axios.post('http://127.0.0.1:8000/predict/', {
+        text: item.text
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000 // 10 second timeout
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Server returned ${res.status}`);
-      }
-      const data = await res.json();
+      
+      const data = response.data;
       setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, result: data, error: null } : t)));
-    } catch (e) {
-      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: String(e.message || e) } : t)));
+    } catch (error) {
+      let errorMessage = 'An unexpected error occurred';
+      
+      if (error.response) {
+        // Server responded with error status
+        const serverError = error.response.data;
+        errorMessage = serverError.detail || `Server error: ${error.response.status}`;
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = 'Unable to connect to server. Please check if the backend is running.';
+      } else if (error.code === 'ECONNABORTED') {
+        // Request timeout
+        errorMessage = 'Request timed out. Please try again.';
+      } else {
+        // Something else happened
+        errorMessage = error.message || 'Network error occurred';
+      }
+      
+      setTweets((prev) => prev.map((t) => (t.id === id ? { ...t, loading: false, error: errorMessage } : t)));
     }
   };
 

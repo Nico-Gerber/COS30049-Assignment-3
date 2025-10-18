@@ -169,60 +169,64 @@ const Insights = () => {
 
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
-      <Paper elevation={3} sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 5 }}>
-        <Typography variant="h3" component="h1" gutterBottom align="center">
+      {/* Header */}
+      <Paper elevation={3} sx={{ p: { xs: 3, sm: 4, md: 5 }, mb: 5, textAlign: 'center' }}>
+        <Typography variant="h3" component="h1" gutterBottom>
           Detection Insights & Analytics
         </Typography>
-        <Typography variant="h6" color="text.secondary" align="center">
+        <Typography variant="h6" color="text.secondary" paragraph>
           Data-driven insights into misinformation patterns and detection performance
         </Typography>
       </Paper>
 
       {/* Key Statistics */}
-      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 5 }}>
+      <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
+        Key Statistics
+      </Typography>
+      <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 6 }} justifyContent="center">
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-              <Typography color="text.secondary" gutterBottom>
+          <Card sx={{ textAlign: 'center', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography color="text.secondary" gutterBottom variant="h6">
                 Total Analyzed
               </Typography>
-              <Typography variant="h4" component="div">
+              <Typography variant="h3" component="div" color="primary.main" sx={{ fontWeight: 'bold' }}>
                 {misinformationStats.total.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-              <Typography color="text.secondary" gutterBottom>
+          <Card sx={{ textAlign: 'center', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography color="text.secondary" gutterBottom variant="h6">
                 Fake Detected
               </Typography>
-              <Typography variant="h4" component="div" color="error.main">
+              <Typography variant="h3" component="div" color="error.main" sx={{ fontWeight: 'bold' }}>
                 {misinformationStats.fake}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-              <Typography color="text.secondary" gutterBottom>
+          <Card sx={{ textAlign: 'center', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography color="text.secondary" gutterBottom variant="h6">
                 Real Verified
               </Typography>
-              <Typography variant="h4" component="div" color="success.main">
+              <Typography variant="h3" component="div" color="success.main" sx={{ fontWeight: 'bold' }}>
                 {misinformationStats.real}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center', p: { xs: 2, sm: 3 } }}>
-              <Typography color="text.secondary" gutterBottom>
+          <Card sx={{ textAlign: 'center', height: '100%' }}>
+            <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography color="text.secondary" gutterBottom variant="h6">
                 Accuracy
               </Typography>
-              <Typography variant="h4" component="div" color="primary.main">
+              <Typography variant="h3" component="div" color="primary.main" sx={{ fontWeight: 'bold' }}>
                 {misinformationStats.accuracy}%
               </Typography>
             </CardContent>
@@ -231,8 +235,8 @@ const Insights = () => {
       </Grid>
 
       {/* Time Range Selector */}
-      <Box sx={{ mb: 3 }}>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
+      <Box sx={{ mb: 5, display: 'flex', justifyContent: 'center' }}>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Time Range</InputLabel>
           <Select
             value={timeRange}
@@ -247,11 +251,14 @@ const Insights = () => {
         </FormControl>
       </Box>
 
-      {/* Charts */}
-      <Grid container spacing={{ xs: 3, md: 4 }} sx={{ mb: 5 }}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
-            <Typography variant="h5" gutterBottom>
+      {/* Charts Section */}
+      <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
+        Analytics Dashboard
+      </Typography>
+      <Grid container spacing={{ xs: 3, md: 4 }} sx={{ mb: 6 }} justifyContent="center">
+        <Grid item xs={12} lg={6}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
               Misinformation by Category
             </Typography>
             <Box sx={{ height: 400 }}>
@@ -260,9 +267,9 @@ const Insights = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
-            <Typography variant="h5" gutterBottom>
+        <Grid item xs={12} lg={6}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
               Detection Accuracy
             </Typography>
             <Box sx={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -273,9 +280,9 @@ const Insights = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
-            <Typography variant="h5" gutterBottom>
+        <Grid item xs={12} lg={6}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
               Detection Trends Over Time
             </Typography>
             <Box sx={{ height: 400 }}>
@@ -284,9 +291,9 @@ const Insights = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: { xs: 3, sm: 4 } }}>
-            <Typography variant="h5" gutterBottom>
+        <Grid item xs={12} lg={6}>
+          <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
               Confidence Distribution
             </Typography>
             <Box sx={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -299,28 +306,32 @@ const Insights = () => {
       </Grid>
 
       {/* Insights Summary */}
-      <Paper sx={{ p: { xs: 3, sm: 4 }, mt: 6, mb: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Key Insights
-        </Typography>
-        <Grid container spacing={2}>
+      <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
+        Key Insights
+      </Typography>
+      <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 4, textAlign: 'center' }}>
+        <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom color="primary">
-              Most Common Misinformation Topics
-            </Typography>
-            <Typography variant="body2" paragraph>
-              Political content represents 32% of detected misinformation, followed by health-related 
-              misinformation at 23%. This aligns with global trends in misinformation patterns.
-            </Typography>
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+                Most Common Misinformation Topics
+              </Typography>
+              <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
+                Political content represents 32% of detected misinformation, followed by health-related 
+                misinformation at 23%. This aligns with global trends in misinformation patterns.
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom color="primary">
-              Detection Performance
-            </Typography>
-            <Typography variant="body2" paragraph>
-              Our model maintains an 87.3% accuracy rate with particularly strong performance in 
-              detecting health misinformation (92% accuracy) and political misinformation (85% accuracy).
-            </Typography>
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+                Detection Performance
+              </Typography>
+              <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
+                Our model maintains an 87.3% accuracy rate with particularly strong performance in 
+                detecting health misinformation (92% accuracy) and political misinformation (85% accuracy).
+              </Typography>
+            </Box>
           </Grid>
         </Grid>
       </Paper>

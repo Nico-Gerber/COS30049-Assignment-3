@@ -3,8 +3,9 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 0px; /* Removed padding since nav is now fixed */
+  padding-top: 0px;
   overflow-x: hidden;
+  position: relative;
 }
 
 .app-root > *:not(footer) {
@@ -96,20 +97,32 @@
   background-clip: text;
 }
 
-/* Tweet Card Styles */
+/* Tweet Card Styles with Enhanced Responsiveness */
 .tweet-card {
-  padding: 32px !important;
-  margin-bottom: 32px;
+  padding: 24px !important;
+  margin-bottom: 24px;
   background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.96)) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s ease !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tweet-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
 }
 
 .tweet-title {
   font-weight: 700 !important;
   color: #1a202c !important;
+  font-size: 1.25rem !important;
 }
 
 .tweet-subtitle {
-  margin-bottom: 24px !important;
+  margin-bottom: 20px !important;
+  color: #64748b !important;
 }
 
 /* Result Box Styles */
@@ -119,6 +132,8 @@
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border-radius: 12px;
   border-left: 4px solid #4f46e5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .prediction-label {
@@ -127,12 +142,14 @@
 }
 
 .verdict {
-  padding: 4px 12px;
-  border-radius: 16px;
+  padding: 6px 16px;
+  border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
+  margin: 4px 0;
 }
 
 .verdict.true {
@@ -150,33 +167,35 @@
   font-weight: 500 !important;
 }
 
-/* Sample List Styles */
+/* Enhanced Sample List Styles */
 .sample-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
   margin: 24px 0;
-  padding: 16px;
+  padding: 20px;
   background: #f8fafc;
   border-radius: 12px;
 }
 
 .sample-item {
   background: white;
-  padding: 8px 12px;
+  padding: 12px 16px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.875rem;
   border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-  max-width: 300px;
+  transition: all 0.3s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .sample-item:hover {
   background: #4f46e5;
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
 }
 
 /* Action Row Styles */
@@ -186,30 +205,8 @@
   justify-content: space-between;
   padding-top: 16px;
   border-top: 1px solid #e2e8f0;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .app-root {
-    padding-top: 16px;
-    padding-bottom: 24px;
-  }
-  
-  .tweet-card {
-    padding: 20px !important;
-    margin: 16px 8px 24px 8px !important;
-  }
-  
-  .sample-list {
-    flex-direction: column;
-    margin: 20px 0;
-    padding: 12px;
-  }
-  
-  .sample-item {
-    max-width: none;
-    margin-bottom: 8px;
-  }
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 /* Footer Specific Styles */
@@ -235,8 +232,207 @@
   transform: translateX(5px) scale(1.05);
 }
 
-@media (max-width: 480px) {
+/* Enhanced Responsive Design */
+
+/* Mobile First - Base Styles (320px and up) */
+@media (max-width: 767px) {
   .app-root {
-    padding-top: 12px;
+    padding-top: 8px;
+    padding-bottom: 16px;
+  }
+  
+  .tweet-card {
+    padding: 16px !important;
+    margin: 12px 8px 20px 8px !important;
+  }
+  
+  .tweet-title {
+    font-size: 1.1rem !important;
+  }
+  
+  .sample-list {
+    grid-template-columns: 1fr;
+    margin: 16px 0;
+    padding: 16px;
+  }
+  
+  .sample-item {
+    margin-bottom: 8px;
+    padding: 10px 14px;
+  }
+  
+  .action-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .result-box {
+    padding: 12px;
+    margin-top: 12px;
+  }
+  
+  /* Hide complex animations on mobile for performance */
+  .floating-animation,
+  .pulse-animation {
+    animation: none;
+  }
+}
+
+/* Small Mobile (320px - 479px) */
+@media (max-width: 479px) {
+  .app-root {
+    padding-top: 4px;
+  }
+  
+  .tweet-card {
+    padding: 12px !important;
+    margin: 8px 4px 16px 4px !important;
+  }
+  
+  .tweet-title {
+    font-size: 1rem !important;
+  }
+  
+  .sample-list {
+    padding: 12px;
+    margin: 12px 0;
+  }
+  
+  .sample-item {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .verdict {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Tablet Portrait (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-root {
+    padding-top: 16px;
+    padding-bottom: 24px;
+  }
+  
+  .tweet-card {
+    padding: 28px !important;
+    margin-bottom: 28px;
+  }
+  
+  .sample-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 24px;
+  }
+  
+  .action-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* Desktop (1024px and up) */
+@media (min-width: 1024px) {
+  .app-root {
+    padding-top: 0px;
+    padding-bottom: 32px;
+  }
+  
+  .tweet-card {
+    padding: 32px !important;
+    margin-bottom: 32px;
+  }
+  
+  .sample-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+/* Large Desktop (1280px and up) */
+@media (min-width: 1280px) {
+  .sample-list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Landscape Orientation Adjustments */
+@media (orientation: landscape) and (max-height: 600px) {
+  .app-root {
+    padding-top: 8px;
+    padding-bottom: 16px;
+  }
+  
+  .tweet-card {
+    padding: 20px !important;
+    margin-bottom: 20px;
+  }
+  
+  /* Reduce vertical spacing in landscape */
+  .sample-list {
+    margin: 16px 0;
+    padding: 16px;
+  }
+}
+
+/* High DPI / Retina Display Adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .tweet-card {
+    border: 0.5px solid rgba(0,0,0,0.1);
+  }
+  
+  .sample-item {
+    border: 0.5px solid #e2e8f0;
+  }
+}
+
+/* Reduced Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .floating-animation,
+  .pulse-animation,
+  .slide-in-up,
+  .nav-slide-in,
+  .nav-brand-animate,
+  .animated-gradient-text {
+    animation: none;
+  }
+  
+  .tweet-card:hover,
+  .sample-item:hover,
+  .footer-tech-chip:hover,
+  .footer-link-hover:hover {
+    transform: none;
+  }
+  
+  * {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Management for Accessibility */
+.tweet-card:focus,
+.sample-item:focus {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Loading States */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-shimmer {
+    animation: none;
+    background: #f0f0f0;
   }
 }

@@ -40,7 +40,7 @@ const Footer = () => {
                   textAlign: { xs: 'center', md: 'left' }
                 }}
               >
-                MisInfo Detector
+                Misinformation Detector
               </Typography>
               <Typography 
                 variant={isSmall ? "body2" : "body1"}
@@ -60,104 +60,9 @@ const Footer = () => {
                 flexWrap: 'wrap',
                 justifyContent: { xs: 'center', md: 'flex-start' }
               }}>
-                <Chip 
-                  label="🤖 AI-Powered" 
-                  size={isSmall ? "small" : "medium"}
-                  sx={{ 
-                    backgroundColor: 'rgba(255,255,255,0.2)', 
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                  }} 
-                />
-                <Chip 
-                  label="🔬 Research-Based" 
-                  size={isSmall ? "small" : "medium"}
-                  sx={{ 
-                    backgroundColor: 'rgba(255,255,255,0.2)', 
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                  }} 
-                />
-                <Chip 
-                  label="⚡ Real-Time" 
-                  size={isSmall ? "small" : "medium"}
-                  sx={{ 
-                    backgroundColor: 'rgba(255,255,255,0.2)', 
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                  }} 
-                />
               </Box>
             </Box>
           </Grid>
-
-          {/* Contact & Links Section - Hidden on mobile to save space */}
-          {!isMobile && (
-            <>
-              <Grid item xs={12} md={4}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-                  Quick Links
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Link href="/" sx={{ 
-                    color: 'rgba(255,255,255,0.9)', 
-                    textDecoration: 'none',
-                    '&:hover': { color: 'white', textDecoration: 'underline' }
-                  }}>
-                    🏠 Home
-                  </Link>
-                  <Link href="/detector" sx={{ 
-                    color: 'rgba(255,255,255,0.9)', 
-                    textDecoration: 'none',
-                    '&:hover': { color: 'white', textDecoration: 'underline' }
-                  }}>
-                    🔍 Detector
-                  </Link>
-                  <Link href="/insights" sx={{ 
-                    color: 'rgba(255,255,255,0.9)', 
-                    textDecoration: 'none',
-                    '&:hover': { color: 'white', textDecoration: 'underline' }
-                  }}>
-                    📊 Insights
-                  </Link>
-                  <Link href="/about" sx={{ 
-                    color: 'rgba(255,255,255,0.9)', 
-                    textDecoration: 'none',
-                    '&:hover': { color: 'white', textDecoration: 'underline' }
-                  }}>
-                    ℹ️ About
-                  </Link>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-                  Academic Project
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <Typography variant="body2" sx={{ opacity: 0.9, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <School fontSize="small" />
-                    COS30049 Assignment 3
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Code fontSize="small" />
-                    Machine Learning & NLP
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Analytics fontSize="small" />
-                    Data Science Project
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Security fontSize="small" />
-                    Misinformation Research
-                  </Typography>
-                </Box>
-              </Grid>
-            </>
-          )}
         </Grid>
 
         {/* Technology Stack */}
@@ -205,25 +110,6 @@ const Footer = () => {
               />
             ))}
           </Box>
-        </Box>
-
-        {/* Copyright */}
-        <Box sx={{ 
-          mt: { xs: 2, md: 3 }, 
-          pt: { xs: 1.5, md: 2 }, 
-          borderTop: '1px solid rgba(255,255,255,0.2)',
-          textAlign: 'center'
-        }}>
-          <Typography 
-            variant={isSmall ? "caption" : "body2"}
-            sx={{ 
-              opacity: 0.8,
-              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' }
-            }}
-          >
-            © {currentYear} COS30049 Assignment 3 - Misinformation Detection Platform. 
-            {!isSmall && " Built for academic research and learning purposes."}
-          </Typography>
         </Box>
 
         {/* Background Decoration - Responsive */}

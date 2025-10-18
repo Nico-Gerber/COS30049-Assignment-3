@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/history", tags=["History"])
 
-# Import the shared analysis_history from enhanced_predict_route
-# This will be imported from enhanced_predict_route to maintain data consistency
+# Import the shared analysis_history from predict_route
+# This will be imported from predict_route to maintain data consistency
 def get_analysis_history():
-    """Import analysis_history from enhanced_predict_route"""
-    from routes.enhanced_predict_route import analysis_history
+    """Import analysis_history from predict_route"""
+    from routes.predict_route import analysis_history
     return analysis_history
 
 class FeedbackUpdate(BaseModel):
@@ -183,9 +183,9 @@ def delete_analysis(analysis_id: int):
     """
     try:
         # Import and modify the global analysis_history
-        from routes import enhanced_predict_route
+        from routes import predict_route
         
-        analysis = next((item for item in enhanced_predict_route.analysis_history if item["id"] == analysis_id), None)
+        analysis = next((item for item in predict_route.analysis_history if item["id"] == analysis_id), None)
         if not analysis:
             logger.warning(f"Analysis with ID {analysis_id} not found for deletion")
             raise HTTPException(
@@ -193,8 +193,8 @@ def delete_analysis(analysis_id: int):
                 detail=f"Analysis with ID {analysis_id} not found"
             )
         
-        enhanced_predict_route.analysis_history = [
-            item for item in enhanced_predict_route.analysis_history 
+        predict_route.analysis_history = [
+            item for item in predict_route.analysis_history 
             if item["id"] != analysis_id
         ]
         
@@ -223,10 +223,10 @@ def clear_all_history():
     """
     try:
         # Import and modify the global analysis_history
-        from routes import enhanced_predict_route
+        from routes import predict_route
         
-        count = len(enhanced_predict_route.analysis_history)
-        enhanced_predict_route.analysis_history.clear()
+        count = len(predict_route.analysis_history)
+        predict_route.analysis_history.clear()
         
         logger.info(f"Cleared all analysis history ({count} records)")
         return {

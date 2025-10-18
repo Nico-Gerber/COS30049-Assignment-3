@@ -75,7 +75,7 @@ def predict(data: InputText):
             "id": len(analysis_history) + 1,
             "text": data.text,
             "prediction": label,
-            "confidence": float(confidence),  # Ensure it's JSON serializable
+            "confidence": float(confidence),
             "timestamp": datetime.now(),
             "user_feedback": None
         }
@@ -108,6 +108,3 @@ def predict(data: InputText):
         "id": analysis_record["id"],
         "message": "Prediction completed successfully"
     }
-
-# Note: History management endpoints have been moved to history_routes.py
-# This keeps the prediction route focused on core functionality

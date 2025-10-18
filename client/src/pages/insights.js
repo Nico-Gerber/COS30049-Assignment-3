@@ -35,13 +35,11 @@ const Insights = () => {
     real: 0,
     accuracy: 0
   });
-  const [loading, setLoading] = useState(true);
 
   // GET - Fetch real statistics from API
   const fetchStatistics = async () => {
-    setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/predict/stats');
+      const response = await fetch('http://127.0.0.1:8000/history/stats/summary');
       if (response.ok) {
         const data = await response.json();
         setMisinformationStats({
@@ -68,8 +66,6 @@ const Insights = () => {
         real: 935,
         accuracy: 87.3
       });
-    } finally {
-      setLoading(false);
     }
   };
 

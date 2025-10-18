@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import enhanced_predict_route
+from routes import enhanced_predict_route, history_routes
 
 app = FastAPI(
     title="Misinformation Detection API",
@@ -19,6 +19,7 @@ app.add_middleware(
 
 # Include route modules
 app.include_router(enhanced_predict_route.router)
+app.include_router(history_routes.router)
 
 @app.get("/")
 def root():

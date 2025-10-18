@@ -20,7 +20,7 @@ const AnalysisHistory = () => {
   const fetchHistory = async (pageNum = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/predict/history?limit=10&offset=${(pageNum - 1) * 10}`);
+      const response = await fetch(`http://127.0.0.1:8000/history?limit=10&offset=${(pageNum - 1) * 10}`);
       if (response.ok) {
         const data = await response.json();
         setHistory(data.items);
@@ -36,7 +36,7 @@ const AnalysisHistory = () => {
   // GET - Fetch statistics
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/predict/stats');
+      const response = await fetch('http://127.0.0.1:8000/history/stats/summary');
       if (response.ok) {
         const data = await response.json();
         setStats(data);
@@ -49,7 +49,7 @@ const AnalysisHistory = () => {
   // GET - Fetch specific analysis
   const fetchAnalysisDetails = async (id) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/predict/history/${id}`);
+      const response = await fetch(`http://127.0.0.1:8000/history/${id}`);
       if (response.ok) {
         const data = await response.json();
         setSelectedAnalysis(data);
@@ -64,7 +64,7 @@ const AnalysisHistory = () => {
     if (!selectedAnalysis) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:8000/predict/history/${selectedAnalysis.id}/feedback`, {
+      const response = await fetch(`http://127.0.0.1:8000/history/${selectedAnalysis.id}/feedback`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback }),
@@ -85,7 +85,7 @@ const AnalysisHistory = () => {
     if (!window.confirm('Are you sure you want to delete this analysis?')) return;
     
     try {
-      const response = await fetch(`http://127.0.0.1:8000/predict/history/${id}`, {
+      const response = await fetch(`http://127.0.0.1:8000/history/${id}`, {
         method: 'DELETE',
       });
       
@@ -103,7 +103,7 @@ const AnalysisHistory = () => {
     if (!window.confirm('Are you sure you want to clear all history? This cannot be undone.')) return;
     
     try {
-      const response = await fetch('http://127.0.0.1:8000/predict/history', {
+      const response = await fetch('http://127.0.0.1:8000/history', {
         method: 'DELETE',
       });
       

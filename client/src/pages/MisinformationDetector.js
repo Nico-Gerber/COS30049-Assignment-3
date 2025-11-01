@@ -22,6 +22,7 @@ import AnalyticsIcon from "@mui/icons-material/Analytics";
 import SecurityIcon from "@mui/icons-material/Security";
 import axios from "axios";
 import { motion } from "framer-motion";
+import WordContributionsChart from "../components/WordContributionsChart";
 
 const MisinformationDetector = () => {
   const theme = useTheme();
@@ -285,24 +286,72 @@ const MisinformationDetector = () => {
 
                 {/* Results Display */}
                 {t.result && (
-                  <Paper elevation={0} sx={{ p: 3, background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", borderRadius: "12px", borderLeft: "4px solid #4f46e5" }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#4f46e5", mb: 2 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 3,
+                      background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+                      borderRadius: "12px",
+                      borderLeft: "4px solid #4f46e5",
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: 600, color: "#4f46e5", mb: 2 }}
+                    >
                       Analysis Result
                     </Typography>
 
-                    <Stack direction={isSmall ? "column" : "row"} spacing={3} sx={{ alignItems: "center", justifyContent: "flex-start" }}>
-                      {/* Animated Gauge */}
-                      <AnimatedGauge confidence={t.result.confidence ?? 0} prediction={t.result.prediction} />
-
-                      {/* Text info */}
-                      <Stack spacing={1}>
-                        <Chip
-                          label={`${t.result.prediction} (${t.result.prediction.toLowerCase().includes("fake") ? `${(100 - t.result.confidence * 100).toFixed(0)}% likely real` : `${(t.result.confidence * 100).toFixed(0)}% likely real`})`}
-                          color={String(t.result.prediction).toLowerCase().includes("fake") ? "error" : "success"}
-                          sx={{ fontWeight: 600, fontSize: "0.875rem", textTransform: "uppercase", width: "fit-content" }}
+                    <Stack
+                      direction={isSmall ? "column" : "row"}
+                      spacing={3}
+                      sx={{ alignItems: "flex-start", justifyContent: "flex-start" }}
+                    >
+                      {/* Animated Gauge (fixed size) */}
+                      <Box sx={{ flex: "0 0 auto" }}>
+                        <AnimatedGauge
+                          confidence={t.result.confidence ?? 0}
+                          prediction={t.result.prediction}
                         />
+                      </Box>
+
+                      {/* Prediction Info (flexible, allows chart to grow) */}
+                      <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                         <Chip
+                           label={`${t.result.prediction} (${
+                             t.result.prediction.toLowerCase().includes("fake")
+                               ? `${(100 - t.result.confidence * 100).toFixed(0)}% likely real`
+                               : `${(t.result.confidence * 100).toFixed(0)}% likely real`
+                           })`}
+                           color={
+                             String(t.result.prediction).toLowerCase().includes("fake")
+                               ? "error"
+                               : "success"
+                           }
+                           sx={{
+                             fontWeight: 600,
+                             fontSize: "0.875rem",
+                             textTransform: "uppercase",
+                             width: "fit-content",
+                           }}
+                         />
+ 
+                         {/* Word Contributions */}
+                         {t.result?.word_contributions && (
+                          <Box sx={{ mt: 1, width: "100%", minWidth: 0 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                              Top Contributioning Words
+                            </Typography>
+ 
+                            <WordContributionsChart
+                              contributions={t.result.word_contributions}
+                              topN={10}
+                              height={220}
+                            />
+                          </Box>
+                         )}
                       </Stack>
-                    </Stack>
+                     </Stack>
                   </Paper>
                 )}
               </Stack>

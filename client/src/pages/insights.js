@@ -18,6 +18,7 @@ import {
 } from 'chart.js';
 import topWordsData from "../components/top_words.json";
 import topHashtagsData from '../components/top_hashtags.json';
+import wordShiftData from '../components/word_shift.json';
 
 // Register Chart.js components
 ChartJS.register(
@@ -390,6 +391,131 @@ const HashtagBarChart = ({ data = { fake: [], real: [] }, mode = 'real', onModeC
   );
 };
 
+// Replace/Add: WordShiftDiverging component (horizontal diverging bar chart using Chart.js)
+const WordShiftDiverging = ({ data = {}, maxItems = 20 }) => {
+  const containerRef = React.useRef(null);
+  const [visible, setVisible] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false); // only mount chart when in view
+
+  React.useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);
+          setMounted(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  const { top_by_label = {} } = data || {};
+  const realList = (top_by_label.real || []).map(d => ({ word: d.word, log_odds: Number(d.log_odds || 0), z: d.z, count: d.count_in_label || d.count || 0 }));
+  const fakeList = (top_by_label.fake || []).map(d => ({ word: d.word, log_odds: Number(d.log_odds || 0), z: d.z, count: d.count_in_label || d.count || 0 }));
+
+  const mapReal = React.useMemo(() => Object.fromEntries(realList.map(r => [r.word, r])), [realList]);
+  const mapFake = React.useMemo(() => Object.fromEntries(fakeList.map(r => [r.word, r])), [fakeList]);
+
+  const entries = React.useMemo(() => {
+    const words = new Set([...realList.map(r => r.word), ...fakeList.map(f => f.word)]);
+    const arr = Array.from(words).map(w => {
+      const r = mapReal[w] || { log_odds: 0, z: 0, count: 0 };
+      const f = mapFake[w] || { log_odds: 0, z: 0, count: 0 };
+      return {
+        word: w,
+        real_log: r.log_odds || 0,
+        fake_log: f.log_odds || 0,
+        real_count: r.count || 0,
+        fake_count: f.count || 0,
+        real_z: r.z || 0,
+        fake_z: f.z || 0,
+        mag: Math.max(Math.abs(r.log_odds || 0), Math.abs(f.log_odds || 0))
+      };
+    });
+    const top = arr.sort((a, b) => b.mag - a.mag).slice(0, maxItems);
+    return top.reverse();
+  }, [realList, fakeList, mapReal, mapFake, maxItems]);
+
+  const labels = entries.map(e => e.word);
+  const realValues = entries.map(e => e.real_log);
+  const fakeValues = entries.map(e => -e.fake_log);
+  const posMax = Math.max(0, ...realValues);
+  const negMin = Math.min(0, ...fakeValues);
+  const absMax = Math.max(Math.abs(negMin), Math.abs(posMax), 1);
+
+  const chartData = React.useMemo(() => ({
+    labels,
+    datasets: [
+      {
+        label: 'Fake (left)',
+        data: fakeValues,
+        backgroundColor: 'rgba(255,112,67,0.9)',
+        borderRadius: 6,
+        barThickness: 12
+      },
+      {
+        label: 'Real (right)',
+        data: realValues,
+        backgroundColor: 'rgba(25,118,210,0.9)',
+        borderRadius: 6,
+        barThickness: 12
+      }
+    ]
+  }), [labels.join('|'), realValues.join(','), fakeValues.join(',')]);
+
+  const options = React.useMemo(() => ({
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 900,
+      easing: 'cubicBezier(.22,.8,.2,1)'
+    },
+    scales: {
+      x: {
+        min: -absMax,
+        max: absMax,
+        ticks: { callback: v => Number(v).toFixed(2) },
+        grid: { drawBorder: false }
+      },
+      y: { grid: { display: false }, ticks: { autoSkip: false } }
+    },
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const idx = ctx.dataIndex;
+            const item = entries[idx];
+            if (!item) return '';
+            return ctx.dataset.label.startsWith('Real')
+              ? `Real: ${item.real_log.toFixed(3)} (count: ${item.real_count}, z: ${item.real_z})`
+              : `Fake: ${item.fake_log.toFixed(3)} (count: ${item.fake_count}, z: ${item.fake_z})`;
+          },
+          title: (items) => items && items.length ? entries[items[0].dataIndex].word : ''
+        }
+      }
+    }
+  }), [absMax, entries]);
+
+  if (!labels.length) {
+    return <Typography variant="body2" color="text.secondary" align="center">No word-shift data available</Typography>;
+  }
+
+  return (
+    <Box ref={containerRef} sx={{ mt: 2 }}>
+      <Box sx={{ height: 480, maxWidth: 980, mx: 'auto', opacity: visible ? 1 : 0.3, transition: 'opacity 420ms ease-in-out' }}>
+        {mounted ? <Bar data={chartData} options={options} /> : <Box sx={{ height: '100%' }} />}
+      </Box>
+    </Box>
+  );
+};
+
 const Insights = () => {
   const [timeRange, setTimeRange] = useState('week');
   const [misinformationStats, setMisinformationStats] = useState({
@@ -621,7 +747,17 @@ const Insights = () => {
           }}
         >
           <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: 700 }}>
-            {cloudMode === 'fake' ? 'Most Common Words in Fake posts' : 'Most Common Words in Real posts'}
+            {cloudMode === 'fake' ? 'Most Common Words in Fake Posts' : 'Most Common Words in Real Posts'}
+          </Typography>
+
+          {/* subtitle telling user hover behaviour */}
+          <Typography
+            variant="subtitle2"
+            align="center"
+            color="text.secondary"
+            sx={{ mb: 2, fontStyle: 'italic' }}
+          >
+            (hover to reveal occurrences)
           </Typography>
 
           {/* toggle between real / fake word cloud */}
@@ -696,6 +832,19 @@ const Insights = () => {
                 }}
                 key={`hashtags-chart-${hashtagMode}-${cloudVersion}`}
               />
+
+              {/* Word‑shift / Log‑odds diverging chart (placed under the hashtag bar graph) */}
+              <Box sx={{ mt: 3 }}>
+                <Paper elevation={0} square sx={{ p: 2, bgcolor: 'background.paper' }}>
+                  <Typography variant="h6" align="center" sx={{ mb: 1, fontWeight: 700 }}>
+                    Distinctive words (Word‑shift / Log‑odds)
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+                    Words most over‑represented in Real vs Fake posts. The number shown is the log‑odds score — larger absolute values mean a stronger association with that label.
+                  </Typography>
+                  <WordShiftDiverging data={wordShiftData} initialMode={hashtagMode === 'real' ? 'real' : 'fake'} />
+                </Paper>
+              </Box>
             </Paper>
           </Box>
         </Paper>
@@ -867,6 +1016,33 @@ export default Insights;
 
 // palettes used by WordCloud (define at module scope so ESLint sees it)
 const palettes = {
-  real: ['#E0F7FA', '#B2EBF2', '#80DEEA', '#4DD0E1', '#26C6DA', '#00BCD4', '#81D4FA', '#B3E5FC'],
-  fake: ['#FFF3E0', '#FFE0B2', '#FFCC80', '#FFAB40', '#FF7043', '#FF5722', '#F4511E', '#D32F2F']
+  real: ['#5ca6b0ff', '#6ad5caff', '#80DEEA', '#4DD0E1', '#26C6DA', '#00BCD4', '#81D4FA', '#6bc4edff'],
+  fake: ['#c29245ff', '#eaa647ff', '#FFCC80', '#FFAB40', '#FF7043', '#FF5722', '#F4511E', '#ce1414ff']
 };
+
+// -----------------------------
+// WordCloud: darken palette colors so they read on white bg
+// -----------------------------
+// small helper to darken a hex color by a percent (0-100)
+function darkenHex(hex, percent) {
+  try {
+    const h = hex.replace('#', '');
+    const r = Math.max(0, Math.min(255, parseInt(h.substring(0, 2), 16)));
+    const g = Math.max(0, Math.min(255, parseInt(h.substring(2, 4), 16)));
+    const b = Math.max(0, Math.min(255, parseInt(h.substring(4, 6), 16)));
+    const factor = (100 - percent) / 100;
+    const rr = Math.round(r * factor);
+    const gg = Math.round(g * factor);
+    const bb = Math.round(b * factor);
+    const toHex = (v) => v.toString(16).padStart(2, '0');
+    return `#${toHex(rr)}${toHex(gg)}${toHex(bb)}`;
+  } catch (e) {
+    return hex;
+  }
+}
+
+// when picking colors for words, pass them through darkenHex(..., 16)
+// Example usage inside your WordCloud render where you map tokens -> style:
+// const base = palette[idx % palette.length];
+// const color = darkenHex(base, 16);
+// ...apply color to the word element style...

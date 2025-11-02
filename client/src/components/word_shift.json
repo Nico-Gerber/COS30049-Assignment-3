@@ -1,0 +1,361 @@
+{
+  "generatedAt": "2025-11-02T19:18:24.126179",
+  "totalPosts": 154798,
+  "vocabSize": 79830,
+  "top_by_label": {
+    "real": [
+      {
+        "word": "said",
+        "count_in_label": 25329,
+        "count_in_rest": 11404,
+        "log_odds": 0.8129,
+        "z": 72.089
+      },
+      {
+        "word": "washington",
+        "count_in_label": 6047,
+        "count_in_rest": 1223,
+        "log_odds": 1.6126,
+        "z": 51.45
+      },
+      {
+        "word": "senate",
+        "count_in_label": 6089,
+        "count_in_rest": 1814,
+        "log_odds": 1.2255,
+        "z": 45.827
+      },
+      {
+        "word": "wage",
+        "count_in_label": 4194,
+        "count_in_rest": 593,
+        "log_odds": 1.9697,
+        "z": 44.931
+      },
+      {
+        "word": "highest",
+        "count_in_label": 3930,
+        "count_in_rest": 497,
+        "log_odds": 2.081,
+        "z": 43.751
+      },
+      {
+        "word": "minimum",
+        "count_in_label": 3717,
+        "count_in_rest": 552,
+        "log_odds": 1.9206,
+        "z": 42.138
+      },
+      {
+        "word": "tax",
+        "count_in_label": 10698,
+        "count_in_rest": 5513,
+        "log_odds": 0.6778,
+        "z": 40.888
+      },
+      {
+        "word": "federal",
+        "count_in_label": 5118,
+        "count_in_rest": 1690,
+        "log_odds": 1.1226,
+        "z": 40.024
+      },
+      {
+        "word": "reuters",
+        "count_in_label": 6347,
+        "count_in_rest": 84,
+        "log_odds": 4.3282,
+        "z": 39.64
+      },
+      {
+        "word": "marijuana",
+        "count_in_label": 3350,
+        "count_in_rest": 190,
+        "log_odds": 2.8797,
+        "z": 38.71
+      },
+      {
+        "word": "house",
+        "count_in_label": 10199,
+        "count_in_rest": 5490,
+        "log_odds": 0.6342,
+        "z": 37.893
+      },
+      {
+        "word": "rate",
+        "count_in_label": 5456,
+        "count_in_rest": 2103,
+        "log_odds": 0.968,
+        "z": 37.722
+      },
+      {
+        "word": "percent",
+        "count_in_label": 4568,
+        "count_in_rest": 1575,
+        "log_odds": 1.0794,
+        "z": 36.949
+      },
+      {
+        "word": "bill",
+        "count_in_label": 5995,
+        "count_in_rest": 2602,
+        "log_odds": 0.8494,
+        "z": 36.187
+      },
+      {
+        "word": "states",
+        "count_in_label": 9555,
+        "count_in_rest": 5238,
+        "log_odds": 0.616,
+        "z": 35.834
+      },
+      {
+        "word": "republican",
+        "count_in_label": 7090,
+        "count_in_rest": 3452,
+        "log_odds": 0.7346,
+        "z": 35.397
+      },
+      {
+        "word": "state",
+        "count_in_label": 8095,
+        "count_in_rest": 4305,
+        "log_odds": 0.6463,
+        "z": 34.267
+      },
+      {
+        "word": "billion",
+        "count_in_label": 2903,
+        "count_in_rest": 695,
+        "log_odds": 1.4435,
+        "z": 34.203
+      },
+      {
+        "word": "committee",
+        "count_in_label": 2998,
+        "count_in_rest": 779,
+        "log_odds": 1.3617,
+        "z": 33.879
+      },
+      {
+        "word": "congress",
+        "count_in_label": 4458,
+        "count_in_rest": 1833,
+        "log_odds": 0.9034,
+        "z": 32.566
+      },
+      {
+        "word": "trade",
+        "count_in_label": 2193,
+        "count_in_rest": 337,
+        "log_odds": 1.8854,
+        "z": 32.266
+      },
+      {
+        "word": "legislation",
+        "count_in_label": 2246,
+        "count_in_rest": 391,
+        "log_odds": 1.7611,
+        "z": 32.174
+      },
+      {
+        "word": "iran",
+        "count_in_label": 2052,
+        "count_in_rest": 257,
+        "log_odds": 2.0891,
+        "z": 31.627
+      },
+      {
+        "word": "african",
+        "count_in_label": 2518,
+        "count_in_rest": 633,
+        "log_odds": 1.3945,
+        "z": 31.385
+      },
+      {
+        "word": "background",
+        "count_in_label": 2010,
+        "count_in_rest": 218,
+        "log_odds": 2.2323,
+        "z": 31.371
+      }
+    ],
+    "fake": [
+      {
+        "word": "biden",
+        "count_in_label": 15401,
+        "count_in_rest": 2401,
+        "log_odds": 1.8432,
+        "z": 84.022
+      },
+      {
+        "word": "vaccine",
+        "count_in_label": 9278,
+        "count_in_rest": 885,
+        "log_odds": 2.3338,
+        "z": 66.371
+      },
+      {
+        "word": "covid",
+        "count_in_label": 10421,
+        "count_in_rest": 3452,
+        "log_odds": 1.0897,
+        "z": 55.497
+      },
+      {
+        "word": "trump",
+        "count_in_label": 52169,
+        "count_in_rest": 36135,
+        "log_odds": 0.3522,
+        "z": 51.468
+      },
+      {
+        "word": "joe",
+        "count_in_label": 5264,
+        "count_in_rest": 709,
+        "log_odds": 1.9886,
+        "z": 49.74
+      },
+      {
+        "word": "via",
+        "count_in_label": 5060,
+        "count_in_rest": 626,
+        "log_odds": 2.0734,
+        "z": 48.973
+      },
+      {
+        "word": "video",
+        "count_in_label": 4310,
+        "count_in_rest": 362,
+        "log_odds": 2.4596,
+        "z": 45.004
+      },
+      {
+        "word": "twitter",
+        "count_in_label": 5381,
+        "count_in_rest": 1714,
+        "log_odds": 1.1287,
+        "z": 40.704
+      },
+      {
+        "word": "ballots",
+        "count_in_label": 3292,
+        "count_in_rest": 274,
+        "log_odds": 2.4678,
+        "z": 39.315
+      },
+      {
+        "word": "fraud",
+        "count_in_label": 3701,
+        "count_in_rest": 809,
+        "log_odds": 1.5046,
+        "z": 38.789
+      },
+      {
+        "word": "image",
+        "count_in_label": 5024,
+        "count_in_rest": 83,
+        "log_odds": 4.0764,
+        "z": 37.052
+      },
+      {
+        "word": "vaccinated",
+        "count_in_label": 2676,
+        "count_in_rest": 276,
+        "log_odds": 2.2535,
+        "z": 35.703
+      },
+      {
+        "word": "pelosi",
+        "count_in_label": 2741,
+        "count_in_rest": 520,
+        "log_odds": 1.6457,
+        "z": 34.435
+      },
+      {
+        "word": "michigan",
+        "count_in_label": 2602,
+        "count_in_rest": 457,
+        "log_odds": 1.7226,
+        "z": 33.995
+      },
+      {
+        "word": "user",
+        "count_in_label": 134449,
+        "count_in_rest": 115660,
+        "log_odds": 0.1356,
+        "z": 33.801
+      },
+      {
+        "word": "harris",
+        "count_in_label": 2297,
+        "count_in_rest": 280,
+        "log_odds": 2.0865,
+        "z": 33.015
+      },
+      {
+        "word": "watch",
+        "count_in_label": 2343,
+        "count_in_rest": 357,
+        "log_odds": 1.8641,
+        "z": 32.851
+      },
+      {
+        "word": "know",
+        "count_in_label": 7066,
+        "count_in_rest": 3563,
+        "log_odds": 0.6696,
+        "z": 32.591
+      },
+      {
+        "word": "vaccines",
+        "count_in_label": 2343,
+        "count_in_rest": 388,
+        "log_odds": 1.7811,
+        "z": 32.532
+      },
+      {
+        "word": "virus",
+        "count_in_label": 2493,
+        "count_in_rest": 528,
+        "log_odds": 1.5357,
+        "z": 32.082
+      },
+      {
+        "word": "immunity",
+        "count_in_label": 2131,
+        "count_in_rest": 216,
+        "log_odds": 2.2699,
+        "z": 31.856
+      },
+      {
+        "word": "fauci",
+        "count_in_label": 2109,
+        "count_in_rest": 164,
+        "log_odds": 2.5335,
+        "z": 31.341
+      },
+      {
+        "word": "even",
+        "count_in_label": 7363,
+        "count_in_rest": 3926,
+        "log_odds": 0.6138,
+        "z": 31.061
+      },
+      {
+        "word": "coronavirus",
+        "count_in_label": 3287,
+        "count_in_rest": 1114,
+        "log_odds": 1.0665,
+        "z": 30.773
+      },
+      {
+        "word": "going",
+        "count_in_label": 6292,
+        "count_in_rest": 3180,
+        "log_odds": 0.6673,
+        "z": 30.672
+      }
+    ]
+  }
+}

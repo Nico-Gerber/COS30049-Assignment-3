@@ -1,0 +1,206 @@
+{
+  "real": [
+    {
+      "text": "trump",
+      "count": 25968
+    },
+    {
+      "text": "said",
+      "count": 19331
+    },
+    {
+      "text": "will",
+      "count": 11773
+    },
+    {
+      "text": "people",
+      "count": 10467
+    },
+    {
+      "text": "president",
+      "count": 9789
+    },
+    {
+      "text": "tax",
+      "count": 9735
+    },
+    {
+      "text": "new",
+      "count": 9387
+    },
+    {
+      "text": "house",
+      "count": 8931
+    },
+    {
+      "text": "white",
+      "count": 7225
+    },
+    {
+      "text": "states",
+      "count": 7015
+    },
+    {
+      "text": "one",
+      "count": 6776
+    },
+    {
+      "text": "state",
+      "count": 6309
+    },
+    {
+      "text": "republican",
+      "count": 6245
+    },
+    {
+      "text": "last",
+      "count": 6090
+    },
+    {
+      "text": "donald",
+      "count": 5445
+    },
+    {
+      "text": "united",
+      "count": 5420
+    },
+    {
+      "text": "senate",
+      "count": 5125
+    },
+    {
+      "text": "federal",
+      "count": 5062
+    },
+    {
+      "text": "americans",
+      "count": 4988
+    },
+    {
+      "text": "obama",
+      "count": 4916
+    },
+    {
+      "text": "washington",
+      "count": 4825
+    },
+    {
+      "text": "us",
+      "count": 4789
+    },
+    {
+      "text": "rate",
+      "count": 4709
+    },
+    {
+      "text": "now",
+      "count": 4654
+    },
+    {
+      "text": "years",
+      "count": 4468
+    }
+  ],
+  "fake": [
+    {
+      "text": "trump",
+      "count": 43577
+    },
+    {
+      "text": "will",
+      "count": 14641
+    },
+    {
+      "text": "people",
+      "count": 14290
+    },
+    {
+      "text": "biden",
+      "count": 12227
+    },
+    {
+      "text": "one",
+      "count": 9663
+    },
+    {
+      "text": "president",
+      "count": 8569
+    },
+    {
+      "text": "donald",
+      "count": 8364
+    },
+    {
+      "text": "said",
+      "count": 8154
+    },
+    {
+      "text": "even",
+      "count": 7167
+    },
+    {
+      "text": "vaccine",
+      "count": 6584
+    },
+    {
+      "text": "going",
+      "count": 6189
+    },
+    {
+      "text": "now",
+      "count": 6016
+    },
+    {
+      "text": "know",
+      "count": 5943
+    },
+    {
+      "text": "new",
+      "count": 5854
+    },
+    {
+      "text": "white",
+      "count": 5709
+    },
+    {
+      "text": "tax",
+      "count": 5142
+    },
+    {
+      "text": "via",
+      "count": 5021
+    },
+    {
+      "text": "election",
+      "count": 5019
+    },
+    {
+      "text": "us",
+      "count": 4963
+    },
+    {
+      "text": "time",
+      "count": 4834
+    },
+    {
+      "text": "joe",
+      "count": 4787
+    },
+    {
+      "text": "make",
+      "count": 4682
+    },
+    {
+      "text": "think",
+      "count": 4617
+    },
+    {
+      "text": "obama",
+      "count": 4386
+    },
+    {
+      "text": "want",
+      "count": 4378
+    }
+  ]
+}

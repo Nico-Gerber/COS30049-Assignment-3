@@ -17,6 +17,7 @@ import {
   LineElement,
 } from 'chart.js';
 import topWordsData from "../components/top_words.json";
+import topHashtagsData from '../components/top_hashtags.json';
 
 // Register Chart.js components
 ChartJS.register(
@@ -309,6 +310,86 @@ const WordCloud = ({ words = [], mode = 'real', maxFont = 160, minFont = 18, pad
   );
 };
 
+// Replace/Add: HashtagBarChart component (independent controlled mode + scroll animation)
+const HashtagBarChart = ({ data = { fake: [], real: [] }, mode = 'real', onModeChange = () => {} }) => {
+  const [visible, setVisible] = React.useState(false);
+  const ref = React.useRef(null);
+
+  React.useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  const list = (data?.topHashtags?.[mode] || []).slice(0, 10);
+  const max = list.reduce((m, it) => Math.max(m, it.count || 0), 1);
+
+  return (
+    <Box ref={ref} sx={{ mt: 1 }}>
+      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
+        <Button
+          size="small"
+          variant={mode === 'real' ? 'contained' : 'outlined'}
+          onClick={() => onModeChange('real')}
+        >
+          Real
+        </Button>
+        <Button
+          size="small"
+          variant={mode === 'fake' ? 'contained' : 'outlined'}
+          onClick={() => onModeChange('fake')}
+        >
+          Fake
+        </Button>
+      </Box>
+
+      {list.length === 0 ? (
+        <Typography variant="body2" color="text.secondary" align="center">No hashtags available</Typography>
+      ) : (
+        <Box sx={{ maxWidth: 920, mx: 'auto', px: 1 }}>
+          {list.map((t, i) => {
+            const pct = Math.round(((t.count || 0) / max) * 100);
+            return (
+              <Box key={t.tag || i} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Typography sx={{ width: 120, fontSize: 13 }} noWrap>
+                  {i + 1}. {t.tag}
+                </Typography>
+
+                <Box sx={{ flex: 1, background: '#f1f3f5', height: 12, borderRadius: 8, overflow: 'hidden' }}>
+                  <Box
+                    sx={{
+                      width: visible ? `${pct}%` : '0%',
+                      height: '100%',
+                      background: mode === 'fake'
+                        ? 'linear-gradient(90deg,#ffb4a2,#ff7043)'
+                        : 'linear-gradient(90deg,#90caf9,#1976d2)',
+                      transition: `width 700ms cubic-bezier(0.2,0.8,0.2,1) ${i * 60}ms`
+                    }}
+                  />
+                </Box>
+
+                <Typography sx={{ width: 72, textAlign: 'right', fontSize: 13 }}>
+                  {(t.count || 0).toLocaleString()}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
 const Insights = () => {
   const [timeRange, setTimeRange] = useState('week');
   const [misinformationStats, setMisinformationStats] = useState({
@@ -462,6 +543,10 @@ const Insights = () => {
     };
   }, [topWords.real, topWords.fake]);
 
+  // Update usage: create an independent hashtagMode state and pass it to HashtagBarChart
+  // locate near top of component function (where cloudMode is defined) and add:
+  const [hashtagMode, setHashtagMode] = React.useState(cloudMode === 'real' ? 'real' : 'fake');
+
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
       {/* top text-only toggle ABOVE main title */}
@@ -516,13 +601,13 @@ const Insights = () => {
 
       {/* If "Our Findings" selected, show only word cloud and stop */}
       {viewMode === 'our' ? (
-        // full-bleed "Our Findings" panel while keeping the outer Container slim for other views
         <Paper
+          elevation={0}
+          square
           sx={{
             p: 3,
             mb: 4,
             minHeight: 1240,
-            // full-bleed trick: make this Paper span the viewport width while inside the centered Container
             width: '100vw',
             position: 'relative',
             left: '50%',
@@ -531,6 +616,8 @@ const Insights = () => {
             marginRight: '-50vw',
             boxSizing: 'border-box',
             backgroundClip: 'padding-box',
+            borderBottom: 'none',         // remove parent bottom border
+            boxShadow: 'none'             // remove any shadow that looks like a line
           }}
         >
           <Typography variant="h5" align="center" sx={{ mb: 2, fontWeight: 700 }}>
@@ -540,7 +627,10 @@ const Insights = () => {
           {/* toggle between real / fake word cloud */}
           <Box sx={{ display: 'flex', gap: 2, mb: 2, justifyContent: 'center' }}>
             <Button
-              onClick={() => setCloudMode('real')}
+              onClick={() => {
+                setCloudMode('real');
+                setCloudVersion((v) => v + 1);
+              }}
               variant="text"
               sx={{
                 textTransform: 'none',
@@ -552,7 +642,10 @@ const Insights = () => {
               Top Real Words
             </Button>
             <Button
-              onClick={() => setCloudMode('fake')}
+              onClick={() => {
+                setCloudMode('fake');
+                setCloudVersion((v) => v + 1);
+              }}
               variant="text"
               sx={{
                 textTransform: 'none',
@@ -565,26 +658,46 @@ const Insights = () => {
             </Button>
           </Box>
 
-          {loadingWords ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <WordCloud
-              key={`${cloudMode}-${cloudVersion}`}
-              words={cloudMode === 'real' ? topWords.real : topWords.fake}
-              mode={cloudMode}
-              globalMin={globalCounts.min}
-              globalMax={globalCounts.max}
-              seed={cloudMode === 'real' ? 1234567 : 7654321}
-            />
-          )}
+          {/* stack the two boxes as siblings */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/* WordCloud box */}
+            <Paper elevation={0} square sx={{ p: 3, mb: 0, bgcolor: 'background.paper', boxShadow: 'none' }}>
+              {loadingWords ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <WordCloud
+                  key={`${cloudMode}-${cloudVersion}`}
+                  words={cloudMode === 'real' ? topWords.real : topWords.fake}
+                  mode={cloudMode}
+                  globalMin={globalCounts.min}
+                  globalMax={globalCounts.max}
+                  seed={cloudMode === 'real' ? 1234567 : 7654321}
+                />
+              )}
+            </Paper>
 
-          {wordsError && (
-            <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
-              Error loading top words: {wordsError}
-            </Typography>
-          )}
+            {/* Hashtag Chart box (sibling of WordCloud) */}
+            <Paper elevation={0} square sx={{ p: 3, minHeight: 340, boxShadow: 'none', borderTop: 'none' }}>
+              <Typography variant="h6" align="center" sx={{ mb: 1, fontWeight: 700 }}>
+                {cloudMode === 'real' ? 'Most popular hashtags in Real posts' : 'Most popular hashtags in Fake posts'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+                Top hashtags extracted from the analysed dataset — toggle between Real and Fake.
+              </Typography>
+
+              <HashtagBarChart
+                data={topHashtagsData}
+                mode={hashtagMode}
+                onModeChange={(m) => {
+                  setHashtagMode(m);
+                  // do NOT change cloudMode here — toggles are independent
+                }}
+                key={`hashtags-chart-${hashtagMode}-${cloudVersion}`}
+              />
+            </Paper>
+          </Box>
         </Paper>
       ) : (
         <>
@@ -726,7 +839,7 @@ const Insights = () => {
                     Most Common Misinformation Topics
                   </Typography>
                   <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
-                    Political content represents 32% of detected misinformation, followed by health-related 
+                    Political content represents 32% of detected misinformation, followed by health-related
                     misinformation at 23%. This aligns with global trends in misinformation patterns.
                   </Typography>
                 </Box>
@@ -737,7 +850,7 @@ const Insights = () => {
                     Detection Performance
                   </Typography>
                   <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
-                    Our model maintains an 87.3% accuracy rate with particularly strong performance in 
+                    Our model maintains an 87.3% accuracy rate with particularly strong performance in
                     detecting health misinformation (92% accuracy) and political misinformation (85% accuracy).
                   </Typography>
                 </Box>

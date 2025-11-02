@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2025-11-02T17:15:14.094466",
+  "totalPosts": 154798,
+  "topHashtags": {
+    "fake": [
+      {
+        "tag": "#covid19",
+        "count": 571
+      },
+      {
+        "tag": "#coronavirus",
+        "count": 508
+      },
+      {
+        "tag": "#trump",
+        "count": 234
+      },
+      {
+        "tag": "#biden",
+        "count": 140
+      },
+      {
+        "tag": "#maga",
+        "count": 131
+      },
+      {
+        "tag": "#donaldtrump",
+        "count": 122
+      },
+      {
+        "tag": "#covid",
+        "count": 101
+      },
+      {
+        "tag": "#vaccine",
+        "count": 91
+      },
+      {
+        "tag": "#coronavirusfacts",
+        "count": 83
+      },
+      {
+        "tag": "#1",
+        "count": 81
+      }
+    ],
+    "real": [
+      {
+        "tag": "#covid19",
+        "count": 2253
+      },
+      {
+        "tag": "#indiafightscorona",
+        "count": 546
+      },
+      {
+        "tag": "#gopdebate",
+        "count": 445
+      },
+      {
+        "tag": "#coronavirus",
+        "count": 402
+      },
+      {
+        "tag": "#sotu",
+        "count": 360
+      },
+      {
+        "tag": "#coronavirusupdates",
+        "count": 287
+      },
+      {
+        "tag": "#trump",
+        "count": 236
+      },
+      {
+        "tag": "#staysafe",
+        "count": 224
+      },
+      {
+        "tag": "#indiawillwin",
+        "count": 195
+      },
+      {
+        "tag": "#tcot",
+        "count": 187
+      }
+    ]
+  }
+}

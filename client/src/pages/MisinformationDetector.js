@@ -13,6 +13,8 @@ import {
   useMediaQuery,
   Stack,
   Chip,
+  LinearProgress,
+  Tooltip,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -194,6 +196,104 @@ const MisinformationDetector = () => {
     );
   };
 
+  // Replace the previous AnimatedWordContributions with this robust version.
+  // It normalizes many input shapes into an array of {word, score}, uses an IntersectionObserver
+  // to trigger animation, then reveals items progressively with an ease-out timing.
+  const AnimatedWordContributions = ({ contributions = [], topN = 10, height = 220, duration = 900 }) => {
+    const ref = React.useRef(null);
+    const [visible, setVisible] = React.useState(false);
+    const [visibleCount, setVisibleCount] = React.useState(0);
+    const rafRef = React.useRef(null);
+
+    // normalize many possible shapes into [{word, score}, ...] sorted desc
+    const normalizeContributions = React.useCallback((c) => {
+      if (!c) return [];
+      if (Array.isArray(c)) {
+        const arr = c.map((item) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            return { word: String(item[0]), score: Number(item[1]) || 0 };
+          }
+          if (item && typeof item === "object") {
+            const word = item.word ?? item.term ?? item.token ?? item.label ?? Object.keys(item)[0] ?? "";
+            const score = Number(item.score ?? item.weight ?? item.value ?? Object.values(item)[0] ?? 0) || 0;
+            return { word: String(word), score };
+          }
+          return { word: String(item), score: 1 };
+        });
+        return arr.filter((it) => it.word).sort((a, b) => b.score - a.score);
+      }
+      if (typeof c === "object") {
+        try {
+          return Object.entries(c)
+            .map(([w, s]) => ({ word: String(w), score: Number(s) || 0 }))
+            .sort((a, b) => b.score - a.score);
+        } catch (e) {
+          return [];
+        }
+      }
+      return [];
+    }, []);
+
+    const norm = React.useMemo(() => normalizeContributions(contributions).slice(0, topN), [contributions, normalizeContributions, topN]);
+
+    // intersection observer to trigger animation when component enters view
+    React.useEffect(() => {
+      const node = ref.current;
+      if (!node) {
+        setVisible(false);
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisible(true);
+            io.disconnect();
+          }
+        },
+        { threshold: 0.15 }
+      );
+      io.observe(node);
+      return () => io.disconnect();
+    }, [ref]);
+
+    // progressive reveal using requestAnimationFrame (ease-out)
+    React.useEffect(() => {
+      if (!visible || norm.length === 0) {
+        setVisibleCount(0);
+        return;
+      }
+      const total = norm.length;
+      const start = performance.now();
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = easeOutCubic(t);
+        const count = Math.max(1, Math.round(eased * total));
+        setVisibleCount(count);
+        if (t < 1) rafRef.current = requestAnimationFrame(step);
+      };
+      rafRef.current = requestAnimationFrame(step);
+      return () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      };
+    }, [visible, norm, duration]);
+
+    // slice the normalized contributions for rendering
+    const toShow = React.useMemo(() => norm.slice(0, visibleCount), [norm, visibleCount]);
+
+    return (
+      <Box ref={ref} sx={{ mt: 1, width: "100%", minWidth: 0 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+          Top Contributing Words
+        </Typography>
+        <div style={{ height }}>
+          {/* WordContributionsChart expects an array of {word, score} — we always pass an array */}
+          <WordContributionsChart contributions={toShow} topN={topN} height={height} />
+        </div>
+      </Box>
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2, md: 3, lg: 4 }, py: { xs: 2, sm: 3, md: 4 } }}>
       {/* Hero Section */}
@@ -310,7 +410,7 @@ const MisinformationDetector = () => {
                       {/* Animated Gauge (fixed size) */}
                       <Box sx={{ flex: "0 0 auto" }}>
                         <AnimatedGauge
-                          confidence={t.result.confidence ?? 0}
+                          confidence={t.result.confidence ?? t.result.score ?? t.result.probability ?? 0}
                           prediction={t.result.prediction}
                         />
                       </Box>
@@ -335,14 +435,34 @@ const MisinformationDetector = () => {
                              width: "fit-content",
                            }}
                          />
- 
+
+                         {/* Confidence summary (numeric + bar) */}
+                         {(() => {
+                           const raw = t.result.confidence ?? t.result.score ?? t.result.probability ?? t.result.confidence_score ?? 0;
+                           let conf = Number(raw) || 0;
+                           if (conf > 1) conf = conf / 100; // normalize percents
+                           conf = Math.max(0, Math.min(1, conf));
+                           const percent = Math.round(conf * 100);
+                           return (
+                             <Box sx={{ mt: 0.5 }}>
+                               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
+                                 <Typography variant="body2" color="text.secondary">Confidence</Typography>
+                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{percent}%</Typography>
+                               </Box>
+                               <Tooltip title={`Raw: ${raw}`}>
+                                 <LinearProgress variant="determinate" value={percent} sx={{ height: 8, borderRadius: 2 }} />
+                               </Tooltip>
+                             </Box>
+                           );
+                         })()}
+
                          {/* Word Contributions */}
                          {t.result?.word_contributions && (
                           <Box sx={{ mt: 1, width: "100%", minWidth: 0 }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                               Top Contributioning Words
                             </Typography>
- 
+
                             <WordContributionsChart
                               contributions={t.result.word_contributions}
                               topN={10}

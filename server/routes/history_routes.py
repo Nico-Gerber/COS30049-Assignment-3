@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 import logging
+import re
+import math
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -283,3 +285,117 @@ def search_history(query: str, limit: int = 10):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to search history"
         )
+
+# NEW: compute and return distinctive words (word-shift / log-odds) from in-memory analysis_history
+@router.get("/distinct-words")
+def get_distinct_words(limit: int = 40, min_count: int = 2):
+    """
+    Compute distinctive words (log-odds) from the shared analysis_history.
+    Returns JSON shaped like:
+    {
+      "items": [{ "word": "vaccine", "logodds": 2.31, "count_real": 10, "count_fake": 1, "sum": 11 }, ...],
+      "top_by_label": { "real": [...], "fake": [...] }
+    }
+    """
+    try:
+        analysis_history = get_analysis_history()
+        if not analysis_history:
+            return {"items": [], "top_by_label": {"real": [], "fake": []}}
+
+        # tokenization helper (simple, same as frontend)
+        tok_re = re.compile(r"\b[a-z0-9']+\b", re.I)
+        def tokenize_text(s):
+            if not s:
+                return []
+            return list({t.lower() for t in tok_re.findall(str(s))})
+
+        cnt_real = {}
+        cnt_fake = {}
+        total_real = 0
+        total_fake = 0
+
+        for it in analysis_history:
+            label_raw = str(it.get("label") or it.get("prediction") or it.get("result") or "").lower()
+            # determine label: 'real' or 'fake' (best-effort)
+            if "fake" in label_raw or label_raw == "0" or label_raw == "false":
+                lbl = "fake"
+            elif "real" in label_raw or label_raw == "1" or label_raw == "true":
+                lbl = "real"
+            else:
+                # fallbacks
+                if it.get("is_fake") in (True, "true", "1"):
+                    lbl = "fake"
+                elif it.get("is_fake") in (False, "false", "0"):
+                    lbl = "real"
+                else:
+                    # skip if unknown
+                    continue
+
+            toks = tokenize_text(it.get("text") or it.get("content") or it.get("tweet") or it.get("post") or "")
+            if not toks:
+                continue
+            if lbl == "real":
+                total_real += 1
+                for w in toks:
+                    cnt_real[w] = cnt_real.get(w, 0) + 1
+            else:
+                total_fake += 1
+                for w in toks:
+                    cnt_fake[w] = cnt_fake.get(w, 0) + 1
+
+        total_real = max(1, total_real)
+        total_fake = max(1, total_fake)
+        prior = 0.01
+
+        all_words = set(list(cnt_real.keys()) + list(cnt_fake.keys()))
+        results = []
+        for w in all_words:
+            cr = cnt_real.get(w, 0)
+            cf = cnt_fake.get(w, 0)
+            s = cr + cf
+            if s < min_count:
+                continue
+            A = cr + prior
+            B = cf + prior
+            # avoid divide by zero: use totals minus A/B
+            denomA = max(1e-9, (total_real - cr + prior))
+            denomB = max(1e-9, (total_fake - cf + prior))
+            oddsA = A / denomA
+            oddsB = B / denomB
+            # signed log-odds: positive => associated with real, negative => fake
+            logodds = math.log(max(1e-9, oddsA / oddsB))
+            results.append({
+                "word": w,
+                "logodds": float(logodds),
+                "count_real": int(cr),
+                "count_fake": int(cf),
+                "sum": int(s)
+            })
+
+        # sort by absolute association strength
+        results.sort(key=lambda x: abs(x["logodds"]), reverse=True)
+        top = results[:limit]
+
+        # split into top_by_label for compatibility with frontend WordShiftDiverging
+        real_list = []
+        fake_list = []
+        for r in top:
+            if r["logodds"] >= 0:
+                real_list.append({"word": r["word"], "log_odds": float(r["logodds"]), "count": r["count_real"] or r["sum"]})
+            else:
+                # present fake side values as positive magnitude for chart but keep sign in items
+                fake_list.append({"word": r["word"], "log_odds": float(abs(r["logodds"])), "count": r["count_fake"] or r["sum"]})
+
+        return {
+            "items": top,
+            "top_by_label": {
+                "real": real_list,
+                "fake": fake_list
+            },
+            "total_real": total_real,
+            "total_fake": total_fake
+        }
+
+    except Exception as e:
+        logger.error(f"Error computing distinct words: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to compute distinct words")

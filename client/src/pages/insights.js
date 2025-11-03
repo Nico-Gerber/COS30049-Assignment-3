@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Container, Typography, Paper, Grid, Box, Card, CardContent,
-  Select, MenuItem, FormControl, InputLabel, Button, CircularProgress, Tooltip as MuiTooltip
+  Select, MenuItem, FormControl, InputLabel, Button, CircularProgress, Tooltip as MuiTooltip,
+  Stack, TextField
 } from '@mui/material';
 import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
 import {
@@ -19,6 +20,7 @@ import {
 import topWordsData from "../components/top_words.json";
 import topHashtagsData from '../components/top_hashtags.json';
 import wordShiftData from '../components/word_shift.json';
+import { getUserDistinctWords, saveUserDistinctWords, deleteUserDistinctWords } from '../components/userDistinctWords';
 
 // Register Chart.js components
 ChartJS.register(
@@ -392,128 +394,136 @@ const HashtagBarChart = ({ data = { fake: [], real: [] }, mode = 'real', onModeC
 };
 
 // Replace/Add: WordShiftDiverging component (horizontal diverging bar chart using Chart.js)
-const WordShiftDiverging = ({ data = {}, maxItems = 20 }) => {
-  const containerRef = React.useRef(null);
-  const [visible, setVisible] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false); // only mount chart when in view
+const WordShiftDiverging = ({ data = {}, maxItems = 20, containerHeight = 480 }) => {
+   const containerRef = React.useRef(null);
+   const [visible, setVisible] = React.useState(false);
+   const [mounted, setMounted] = React.useState(false); // only mount chart when in view
 
-  React.useEffect(() => {
-    const node = containerRef.current;
-    if (!node) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisible(true);
-          setMounted(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.2 }
-    );
-    io.observe(node);
-    return () => io.disconnect();
-  }, []);
+   React.useEffect(() => {
+     const node = containerRef.current;
+     if (!node) return;
+     const io = new IntersectionObserver(
+       (entries) => {
+         if (entries[0].isIntersecting) {
+           setVisible(true);
+           setMounted(true);
+           io.disconnect();
+         }
+       },
+       { threshold: 0.2 }
+     );
+     io.observe(node);
+     return () => io.disconnect();
+   }, []);
 
-  const { top_by_label = {} } = data || {};
-  const realList = (top_by_label.real || []).map(d => ({ word: d.word, log_odds: Number(d.log_odds || 0), z: d.z, count: d.count_in_label || d.count || 0 }));
-  const fakeList = (top_by_label.fake || []).map(d => ({ word: d.word, log_odds: Number(d.log_odds || 0), z: d.z, count: d.count_in_label || d.count || 0 }));
+   const { top_by_label = {} } = data || {};
+   const realList = (top_by_label.real || []).map(d => ({ word: d.word, log_odds: Number(d.log_odds || 0), z: d.z, count: d.count_in_label || d.count || 0 }));
+   const fakeList = (top_by_label.fake || []).map(d => ({ word: d.word, log_odds: Number(d.log_odds || 0), z: d.z, count: d.count_in_label || d.count || 0 }));
 
-  const mapReal = React.useMemo(() => Object.fromEntries(realList.map(r => [r.word, r])), [realList]);
-  const mapFake = React.useMemo(() => Object.fromEntries(fakeList.map(r => [r.word, r])), [fakeList]);
+   const mapReal = React.useMemo(() => Object.fromEntries(realList.map(r => [r.word, r])), [realList]);
+   const mapFake = React.useMemo(() => Object.fromEntries(fakeList.map(r => [r.word, r])), [fakeList]);
 
-  const entries = React.useMemo(() => {
-    const words = new Set([...realList.map(r => r.word), ...fakeList.map(f => f.word)]);
-    const arr = Array.from(words).map(w => {
-      const r = mapReal[w] || { log_odds: 0, z: 0, count: 0 };
-      const f = mapFake[w] || { log_odds: 0, z: 0, count: 0 };
-      return {
-        word: w,
-        real_log: r.log_odds || 0,
-        fake_log: f.log_odds || 0,
-        real_count: r.count || 0,
-        fake_count: f.count || 0,
-        real_z: r.z || 0,
-        fake_z: f.z || 0,
-        mag: Math.max(Math.abs(r.log_odds || 0), Math.abs(f.log_odds || 0))
-      };
-    });
-    const top = arr.sort((a, b) => b.mag - a.mag).slice(0, maxItems);
-    return top.reverse();
-  }, [realList, fakeList, mapReal, mapFake, maxItems]);
+   const entries = React.useMemo(() => {
+     const words = new Set([...realList.map(r => r.word), ...fakeList.map(f => f.word)]);
+     const arr = Array.from(words).map(w => {
+       const r = mapReal[w] || { log_odds: 0, z: 0, count: 0 };
+       const f = mapFake[w] || { log_odds: 0, z: 0, count: 0 };
+       return {
+         word: w,
+         real_log: r.log_odds || 0,
+         fake_log: f.log_odds || 0,
+         real_count: r.count || 0,
+         fake_count: f.count || 0,
+         real_z: r.z || 0,
+         fake_z: f.z || 0,
+         mag: Math.max(Math.abs(r.log_odds || 0), Math.abs(f.log_odds || 0))
+       };
+     });
+     const top = arr.sort((a, b) => b.mag - a.mag).slice(0, maxItems);
+     return top.reverse();
+   }, [realList, fakeList, mapReal, mapFake, maxItems]);
 
-  const labels = entries.map(e => e.word);
-  const realValues = entries.map(e => e.real_log);
-  const fakeValues = entries.map(e => -e.fake_log);
-  const posMax = Math.max(0, ...realValues);
-  const negMin = Math.min(0, ...fakeValues);
-  const absMax = Math.max(Math.abs(negMin), Math.abs(posMax), 1);
+   const labels = entries.map(e => e.word);
+   const realValues = entries.map(e => e.real_log);
+   const fakeValues = entries.map(e => -e.fake_log);
+   const posMax = Math.max(0, ...realValues);
+   const negMin = Math.min(0, ...fakeValues);
+   const absMax = Math.max(Math.abs(negMin), Math.abs(posMax), 1);
 
-  const chartData = React.useMemo(() => ({
-    labels,
-    datasets: [
-      {
-        label: 'Fake (left)',
-        data: fakeValues,
-        backgroundColor: 'rgba(255,112,67,0.9)',
-        borderRadius: 6,
-        barThickness: 12
-      },
-      {
-        label: 'Real (right)',
-        data: realValues,
-        backgroundColor: 'rgba(25,118,210,0.9)',
-        borderRadius: 6,
-        barThickness: 12
-      }
-    ]
-  }), [labels.join('|'), realValues.join(','), fakeValues.join(',')]);
+   const chartData = React.useMemo(() => ({
+     labels,
+     datasets: [
+       {
+         label: 'Fake (left)',
+         data: fakeValues,
+         backgroundColor: 'rgba(255,112,67,0.9)',
+         borderRadius: 6,
+         barThickness: 12
+       },
+       {
+         label: 'Real (right)',
+         data: realValues,
+         backgroundColor: 'rgba(25,118,210,0.9)',
+         borderRadius: 6,
+         barThickness: 12
+       }
+     ]
+   }), [labels.join('|'), realValues.join(','), fakeValues.join(',')]);
 
-  const options = React.useMemo(() => ({
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: {
-      duration: 900,
-      easing: 'cubicBezier(.22,.8,.2,1)'
-    },
-    scales: {
-      x: {
-        min: -absMax,
-        max: absMax,
-        ticks: { callback: v => Number(v).toFixed(2) },
-        grid: { drawBorder: false }
-      },
-      y: { grid: { display: false }, ticks: { autoSkip: false } }
-    },
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => {
-            const idx = ctx.dataIndex;
-            const item = entries[idx];
-            if (!item) return '';
-            return ctx.dataset.label.startsWith('Real')
-              ? `Real: ${item.real_log.toFixed(3)} (count: ${item.real_count}, z: ${item.real_z})`
-              : `Fake: ${item.fake_log.toFixed(3)} (count: ${item.fake_count}, z: ${item.fake_z})`;
-          },
-          title: (items) => items && items.length ? entries[items[0].dataIndex].word : ''
-        }
-      }
-    }
-  }), [absMax, entries]);
+   const options = React.useMemo(() => ({
+     indexAxis: 'y',
+     responsive: true,
+     maintainAspectRatio: false,
+     animation: {
+       duration: 900,
+       easing: 'cubicBezier(.22,.8,.2,1)'
+     },
+     scales: {
+       x: {
+         min: -absMax,
+         max: absMax,
+         ticks: { callback: v => Number(v).toFixed(2) },
+         grid: { drawBorder: false }
+       },
+       y: { grid: { display: false }, ticks: { autoSkip: false } }
+     },
+     plugins: {
+       legend: { position: 'top' },
+       tooltip: {
+         callbacks: {
+           label: (ctx) => {
+             const idx = ctx.dataIndex;
+             const item = entries[idx];
+             if (!item) return '';
+             return ctx.dataset.label.startsWith('Real')
+               ? `Real: ${item.real_log.toFixed(3)} (count: ${item.real_count}, z: ${item.real_z})`
+               : `Fake: ${item.fake_log.toFixed(3)} (count: ${item.fake_count}, z: ${item.fake_z})`;
+           },
+           title: (items) => items && items.length ? entries[items[0].dataIndex].word : ''
+         }
+       }
+     }
+   }), [absMax, entries]);
 
-  if (!labels.length) {
-    return <Typography variant="body2" color="text.secondary" align="center">No word-shift data available</Typography>;
-  }
+   // allow numeric or percent string for height; normalize to CSS value
+   const heightCss = typeof containerHeight === 'number' ? `${containerHeight}px` : containerHeight;
 
-  return (
-    <Box ref={containerRef} sx={{ mt: 2 }}>
-      <Box sx={{ height: 480, maxWidth: 980, mx: 'auto', opacity: visible ? 1 : 0.3, transition: 'opacity 420ms ease-in-out' }}>
-        {mounted ? <Bar data={chartData} options={options} /> : <Box sx={{ height: '100%' }} />}
-      </Box>
-    </Box>
-  );
+   return (
+     <Box ref={containerRef} sx={{ mt: 2 }}>
+       <Box
+         sx={{
+           height: heightCss,
+           maxWidth: 980,
+           mx: 'auto',
+           opacity: visible ? 1 : 0.3,
+           transition: 'opacity 420ms ease-in-out',
+           overflow: 'hidden' // ensure inner chart can't overflow its container
+         }}
+       >
+         {mounted ? <Bar data={chartData} options={options} /> : <Box sx={{ height: '100%' }} />}
+       </Box>
+     </Box>
+   );
 };
 
 const Insights = () => {
@@ -524,9 +534,13 @@ const Insights = () => {
     real: 0,
     accuracy: 0
   });
+  // median length by category state
+  const [categoryMedianData, setCategoryMedianData] = useState(null);
+  const [loadingCategoryMedian, setLoadingCategoryMedian] = useState(true);
 
   // view mode toggle: 'your' (default) or 'our'
   const [viewMode, setViewMode] = useState('your');
+  // --- end new state ---
 
   // word-cloud data state
   const [topWords, setTopWords] = useState({ real: [], fake: [] });
@@ -537,6 +551,9 @@ const Insights = () => {
   const [cloudMode, setCloudMode] = useState('real');
   // bump this synchronously when toggling so WordCloud remounts immediately (no visible flash of old layout)
   const [cloudVersion, setCloudVersion] = useState(0);
+
+  // Add state to hold fetched analysis history (near other useState calls)
+  const [analysisItems, setAnalysisItems] = React.useState(null);
 
   // GET - load processed top words json
   useEffect(() => {
@@ -566,15 +583,47 @@ const Insights = () => {
   // GET - Fetch real statistics from API
   const fetchStatistics = async () => {
     try {
+      console.log('[Insights] fetching stats summary...');
       const response = await fetch('http://127.0.0.1:8000/history/stats/summary');
       if (response.ok) {
         const data = await response.json();
         setMisinformationStats({
-          total: data.total_analyses,
-          fake: data.fake_count,
-          real: data.real_count,
-          accuracy: Math.round(data.avg_confidence * 100)
+          total: data.total_analyses ?? data.total ?? 0,
+          fake: data.fake_count ?? data.fake ?? 0,
+          real: data.real_count ?? data.real ?? 0,
+          accuracy: Math.round((data.avg_confidence ?? data.accuracy ?? 0) * 100)
         });
+
+        // If the stats endpoint includes actual items, capture them for BoxPlotPair
+        const possibleItems = data.items || data.data || data.history || data.analyses || null;
+        if (Array.isArray(possibleItems) && possibleItems.length) {
+          console.log('[Insights] stats payload included history items, storing analysisItems (count=%d)', possibleItems.length);
+          setAnalysisItems(possibleItems);
+          return;
+        }
+
+        // Otherwise try safe list-style endpoints (avoid dynamic-id routes like /history/analyses which may expect an int)
+        const tryListEndpoints = [
+          'http://127.0.0.1:8000/history',
+          '/history',
+          '/history/list',
+          '/history/all'
+        ];
+        for (const ep of tryListEndpoints) {
+          try {
+            const r = await fetch(ep);
+            if (!r.ok) continue;
+            const p = await r.json();
+            const items = Array.isArray(p) ? p : (p.items || p.data || p.history || null);
+            if (Array.isArray(items) && items.length) {
+              console.log('[Insights] found history items at', ep, 'count=', items.length);
+              setAnalysisItems(items);
+              break;
+            }
+          } catch (e) {
+            // ignore and try next
+          }
+        }
         return;
       }
     } catch (error) {
@@ -595,12 +644,109 @@ const Insights = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch analysis history and compute median message length per category
+  useEffect(() => {
+    const endpoints = [
+      '/history/analyses',
+      '/history/posts',
+      '/history/records',
+      '/history/history',
+      'http://127.0.0.1:8000/history/analyses' // explicit fallback
+    ];
+
+    const fetchAndCompute = async () => {
+      console.log('[Insights] start fetchAndCompute, endpoints=', endpoints);
+      setLoadingCategoryMedian(true);
+      let items = null;
+
+      for (const ep of endpoints) {
+        try {
+          console.log('[Insights] trying', ep);
+          const res = await fetch(ep, { credentials: 'same-origin' });
+          console.log('[Insights] response', ep, res.status);
+          if (!res.ok) {
+            console.warn('[Insights] non-ok response', ep, res.status);
+            continue;
+          }
+          const payload = await res.json();
+          console.log('[Insights] payload sample from', ep, payload && (Array.isArray(payload) ? payload.slice(0,3) : payload.items ? payload.items.slice(0,3) : payload));
+          if (Array.isArray(payload) && payload.length > 0) { items = payload; break; }
+          if (payload && Array.isArray(payload.items) && payload.items.length > 0) { items = payload.items; break; }
+          if (payload && Array.isArray(payload.data) && payload.data.length > 0) { items = payload.data; break; }
+        } catch (err) {
+          console.warn('[Insights] fetch error for', ep, err);
+        }
+      }
+
+      if (!items) {
+        console.warn('[Insights] No history items found; using fallback category data.');
+        setCategoryMedianData(fallbackYourCategoryData);
+        setLoadingCategoryMedian(false);
+        return;
+      }
+
+      // Normalize fields and group lengths by category
+      const groups = {};
+      for (const it of items) {
+        const category = (it.category || it.topic || it.label || it.tag || 'Unknown').toString();
+        const text = (it.text || it.content || it.tweet || it.post || '').toString();
+        const len = text.length;
+        if (!groups[category]) groups[category] = [];
+        groups[category].push(len);
+      }
+
+      const labels = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
+      const medians = labels.map(label => {
+        const arr = groups[label].slice().sort((x, y) => x - y);
+        if (arr.length === 0) return 0;
+        const m = Math.floor(arr.length / 2);
+        return arr.length % 2 === 1 ? arr[m] : (arr[m - 1] + arr[m]) / 2;
+      });
+
+      const palette = labels.map((_, i) => `hsl(${(i * 37) % 360}deg 70% 55%)`);
+
+      setCategoryMedianData({
+        labels,
+        datasets: [{
+          label: 'Median message length (chars)',
+          data: medians,
+          backgroundColor: palette,
+          borderWidth: 1
+        }]
+      });
+
+      console.log('[Insights] setCategoryMedianData labels=', labels, 'medians=', medians.slice(0,10));
+      setLoadingCategoryMedian(false);
+    };
+
+    fetchAndCompute();
+  }, []);
+
   // === Dataset definitions (Your Insights) ===
+  // categoryMedianData is populated from history; fallbackYourCategoryData is used if fetch fails
   const yourCategoryData = {
     labels: ['Politics', 'Health', 'Technology', 'Sports', 'Entertainment', 'Science'],
     datasets: [{
       label: 'Misinformation Cases',
       data: [45, 32, 18, 12, 25, 8],
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 205, 86, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(255, 159, 64, 0.8)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  // Fallback dataset (used when API/history is unavailable)
+  const fallbackYourCategoryData = {
+    labels: ['Politics', 'Health', 'Technology', 'Sports', 'Entertainment', 'Science'],
+    datasets: [{
+      label: 'Median message length (chars)',
+      data: [320, 264, 198, 152, 220, 180],
       backgroundColor: [
         'rgba(255, 99, 132, 0.8)',
         'rgba(54, 162, 235, 0.8)',
@@ -672,6 +818,309 @@ const Insights = () => {
   // Update usage: create an independent hashtagMode state and pass it to HashtagBarChart
   // locate near top of component function (where cloudMode is defined) and add:
   const [hashtagMode, setHashtagMode] = React.useState(cloudMode === 'real' ? 'real' : 'fake');
+
+  // --- added: compute median word lengths for Real vs Fake and top-3 distinctive words ---
+  const computeMedian = (arr = []) => {
+    if (!arr || arr.length === 0) return null;
+    const a = arr.slice().sort((x, y) => x - y);
+    const m = Math.floor(a.length / 2);
+    return a.length % 2 === 1 ? a[m] : (a[m - 1] + a[m]) / 2;
+  };
+
+  const medianWordsByLabel = React.useMemo(() => {
+    if (!Array.isArray(analysisItems) || analysisItems.length === 0) return { real: null, fake: null };
+
+    const realWords = [];
+    const fakeWords = [];
+
+    for (const it of analysisItems) {
+      const text = String(it.text || it.content || it.tweet || it.post || '');
+      const words = text.split(/\s+/).filter(Boolean).length;
+
+      const rawLabel = String(it.label || it.prediction || it.result || it.tag || '').toLowerCase();
+      if (rawLabel.includes('fake') || rawLabel === '0' || rawLabel.includes('false') || it.is_fake === true || it.is_fake === 'true') {
+        fakeWords.push(words);
+      } else if (rawLabel.includes('real') || rawLabel === '1' || rawLabel.includes('true') || it.is_fake === false || it.is_fake === 'false') {
+        realWords.push(words);
+      } else if (typeof it.confidence === 'number') {
+        (it.confidence < 0.5 ? fakeWords : realWords).push(words);
+      }
+    }
+
+    return {
+      real: computeMedian(realWords),
+      fake: computeMedian(fakeWords)
+    };
+  }, [analysisItems]);
+
+  const top3DistinctWords = React.useMemo(() => {
+    // Prefer the same aggregation used by the SavedDistinctWordsPanel (word_contributions in history items).
+    // Fallback to the token/log-odds based computation or the imported wordShiftData.
+    const fromContribs = (items) => {
+      if (!Array.isArray(items) || items.length === 0) return null;
+      const agg = Object.create(null);
+      for (const it of items) {
+        const wc = it.word_contributions || it.wordContrib || it.wordContributions || it.word_contrib || null;
+        if (!wc || typeof wc !== 'object') continue;
+        for (const [rawWord, vRaw] of Object.entries(wc)) {
+          const w = normalizeKey(rawWord);
+          const v = Number(vRaw || 0);
+          if (!w) continue;
+          const absv = Math.abs(v);
+          if (!Number.isFinite(absv) || absv === 0) continue;
+          const cur = agg[w];
+          if (!cur || absv > cur.maxAbs) {
+            agg[w] = { word: w, maxAbs: absv, sign: Math.sign(v) || 1, count: (cur?.count || 0) + 1, sampleVal: v };
+          } else {
+            agg[w].count = (agg[w].count || 0) + 1;
+          }
+        }
+      }
+      const arr = Object.values(agg);
+      if (!arr.length) return null;
+      arr.sort((a, b) => b.maxAbs - a.maxAbs);
+      return arr.slice(0, 3).map(r => r.word);
+    };
+
+    // try using explicit word_contributions from analysisItems / history (should match SavedDistinctWordsPanel)
+    const fromHistoryContribs = fromContribs(analysisItems || []);
+    if (fromHistoryContribs && fromHistoryContribs.length) return fromHistoryContribs;
+
+    // fallback: token/log-odds-based (existing behaviour)
+    const computeFromItems = (items) => {
+      if (!Array.isArray(items) || items.length === 0) return null;
+      const tokenize = (s = '') => (String(s).toLowerCase().match(/\b[a-z0-9']+\b/g) || []);
+      const cntReal = {}, cntFake = {};
+      let totalReal = 0, totalFake = 0;
+
+      for (const it of items) {
+        const rawLabel = String(it.label || it.prediction || it.result || it.tag || '').toLowerCase();
+        let label = null;
+        if (rawLabel.includes('fake') || rawLabel === '0' || rawLabel.includes('false') || it.is_fake === true || it.is_fake === 'true') label = 'fake';
+        else if (rawLabel.includes('real') || rawLabel === '1' || rawLabel.includes('true') || it.is_fake === false || it.is_fake === 'false') label = 'real';
+        else if (typeof it.confidence === 'number') label = it.confidence < 0.5 ? 'fake' : 'real';
+        if (!label) continue;
+
+        const toks = Array.from(new Set(tokenize(it.text || it.content || it.tweet || it.post || '')));
+        for (const w of toks) {
+          if (label === 'real') { cntReal[w] = (cntReal[w] || 0) + 1; totalReal++; }
+          else { cntFake[w] = (cntFake[w] || 0) + 1; totalFake++; }
+        }
+      }
+
+      totalReal = Math.max(1, totalReal);
+      totalFake = Math.max(1, totalFake);
+      const prior = 0.01;
+      const results = [];
+
+      const allWords = new Set([...Object.keys(cntReal), ...Object.keys(cntFake)]);
+      for (const w of allWords) {
+        const A = (cntReal[w] || 0) + prior;
+        const B = (cntFake[w] || 0) + prior;
+        const oddsA = A / Math.max(1e-9, (totalReal - A));
+        const oddsB = B / Math.max(1e-9, (totalFake - B));
+        const logodds = Math.log(Math.max(1e-9, oddsA / oddsB));
+        results.push({ word: w, score: Math.abs(logodds), logodds, cntReal: cntReal[w] || 0, cntFake: cntFake[w] || 0 });
+      }
+
+      results.sort((a, b) => b.score - a.score);
+      return results.slice(0, 3).map(r => r.word);
+    };
+
+    const fromHistoryTokens = computeFromItems(analysisItems || []);
+    if (fromHistoryTokens && fromHistoryTokens.length) return fromHistoryTokens;
+
+    // final fallback: imported word_shift.json (unchanged behaviour)
+    const byLabel = wordShiftData?.top_by_label || {};
+    const all = [...(byLabel.real || []), ...(byLabel.fake || [])].map(w => ({
+      word: String(w.word || '').toLowerCase(),
+      score: Math.abs(Number(w.log_odds || w.score || 0))
+    })).filter(w => w.word);
+
+    const map = new Map();
+    for (const w of all) {
+      const cur = map.get(w.word);
+      if (!cur || w.score > cur.score) map.set(w.word, w);
+    }
+    return Array.from(map.values()).sort((a, b) => b.score - a.score).slice(0, 3).map(x => x.word);
+  }, [analysisItems, wordShiftData]);
+
+  // --- add: simple SVG BoxPlotPair component (no external chart plugin) ---
+  const BoxPlotPair = ({ endpoints, items: providedItems = null }) => {
+    const [loading, setLoading] = React.useState(true);
+    const [groups, setGroups] = React.useState({ real: [], fake: [] });
+    const [error, setError] = React.useState(null);
+
+    React.useEffect(() => {
+      let mounted = true;
+      const fetchItems = async () => {
+        setLoading(true);
+        const items = providedItems || await (async () => {
+          for (const ep of endpoints) {
+            try {
+              const res = await fetch(ep, { credentials: 'same-origin' });
+              if (!res.ok) continue;
+              const payload = await res.json();
+              if (Array.isArray(payload) && payload.length) return payload;
+              if (payload && Array.isArray(payload.items) && payload.items.length) return payload.items;
+              if (payload && Array.isArray(payload.data) && payload.data.length) return payload.data;
+            } catch (e) { /* try next */ }
+          }
+          return null;
+        })();
+        if (!mounted) return;
+        if (!items) {
+          setError('No history available');
+          setLoading(false);
+          return;
+        }
+
+        const g = { real: [], fake: [] };
+        for (const it of items) {
+          const text = String(it.text || it.content || it.tweet || it.post || '');
+          const words = text.split(/\s+/).filter(Boolean).length;
+          const rawLabel = String(it.label || it.prediction || it.result || it.tag || '').toLowerCase();
+          if (rawLabel.includes('fake') || rawLabel === '0' || rawLabel.includes('false')) {
+            g.fake.push(words);
+          } else if (rawLabel.includes('real') || rawLabel === '1' || rawLabel.includes('true')) {
+            g.real.push(words);
+          } else if (it.is_fake === true || it.is_fake === 'true') {
+            g.fake.push(words);
+          } else if (it.is_fake === false || it.is_fake === 'false') {
+            g.real.push(words);
+          } else if (typeof it.confidence === 'number') {
+            (it.confidence < 0.5 ? g.fake : g.real).push(words);
+          }
+        }
+        setGroups(g);
+        setLoading(false);
+      };
+      fetchItems();
+      return () => { mounted = false; };
+    }, [endpoints, providedItems]);
+
+    const computeStats = (arr) => {
+      if (!arr || arr.length === 0) return null;
+      const a = arr.slice().sort((x,y) => x - y);
+      const n = a.length;
+      const q = (i) => {
+        const p = i * (n - 1);
+        const lo = Math.floor(p), hi = Math.ceil(p);
+        if (lo === hi) return a[lo];
+        return a[lo] * (hi - p) + a[hi] * (p - lo);
+      };
+      return {
+        min: a[0],
+        q1: q(0.25),
+        median: q(0.5),
+        q3: q(0.75),
+        max: a[a.length - 1],
+        count: n
+      };
+    };
+
+    const sReal = computeStats(groups.real);
+    const sFake = computeStats(groups.fake);
+    const hasData = !!(sReal || sFake);
+
+    // narrow the native SVG coordinate width so it fits the two-column grid
+    const width = 560, height = 240, pad = 56;
+    // y positions: Real on top, Fake below
+    const topY = pad + (height - pad * 2) * 0.25;
+    const bottomY = pad + (height - pad * 2) * 0.75;
+
+    const vals = [
+      ...(sReal ? [sReal.min, sReal.max] : []),
+      ...(sFake ? [sFake.min, sFake.max] : [])
+    ].filter(v => Number.isFinite(v));
+    const globalMin = vals.length ? Math.max(0, Math.min(...vals)) : 0;
+    const globalMax = vals.length ? Math.max(...vals) : 1;
+    const scaleX = (v) => {
+      if (!Number.isFinite(v)) return pad;
+      const t = (v - globalMin) / Math.max(1e-6, (globalMax - globalMin));
+      return pad + t * (width - pad * 2);
+    };
+
+    const boxH = 32;
+
+    // compute nice ticks (5 ticks)
+    const ticksCount = 5;
+    const ticks = [];
+    for (let i = 0; i < ticksCount; i++) {
+      const val = globalMin + (globalMax - globalMin) * (i / (ticksCount - 1));
+      ticks.push(Math.round(val));
+    }
+
+    return (
+      <Box sx={{ textAlign: 'center', p: 1 }}>
+        <Typography variant="h5" gutterBottom sx={{ mb: 2, fontWeight: 'bold' }}>
+          Message length distribution (words)
+        </Typography>
+
+
+        
+
+        {loading ? (
+          <Box sx={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        ) : error || !hasData ? (
+          <Box sx={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+            <Typography color="text.secondary">No historical labelled posts found.</Typography>
+            <Typography variant="caption" color="text.secondary">Ensure history API is available or upload labelled data.</Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            {/* make SVG width responsive to parent box so it scales inside grid column */}
+            <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="Horizontal box plots for real and fake message lengths">
+              {/* axis base line */}
+              <line x1={pad} x2={width - pad} y1={height - 18} y2={height - 18} stroke="#e6e6e6" strokeWidth="1" />
+
+              {/* axis ticks and labels */}
+              {ticks.map((t, i) => {
+                const x = pad + (i / (ticks.length - 1)) * (width - pad * 2);
+                return (
+                  <g key={i}>
+                    <line x1={x} x2={x} y1={height - 24} y2={height - 14} stroke="#ddd" strokeWidth="1" />
+                    <text x={x} y={height - 4} fontSize="11" textAnchor="middle" fill="#666">{t}</text>
+                  </g>
+                );
+              })}
+
+              {/* Real (top) horizontal box */}
+              {sReal && <>
+                <line x1={scaleX(sReal.min)} x2={scaleX(sReal.max)} y1={topY} y2={topY} stroke="#1976d2" strokeWidth="2" />
+                <line x1={scaleX(sReal.min)} x2={scaleX(sReal.min)} y1={topY - 10} y2={topY + 10} stroke="#1976d2" strokeWidth="2" />
+                <line x1={scaleX(sReal.max)} x2={scaleX(sReal.max)} y1={topY - 10} y2={topY + 10} stroke="#1976d2" strokeWidth="2" />
+                <rect x={scaleX(sReal.q1)} y={topY - boxH/2} width={Math.max(2, scaleX(sReal.q3) - scaleX(sReal.q1))} height={boxH} fill="rgba(25,118,210,0.12)" stroke="rgba(25,118,210,0.95)" rx="6" />
+                <line x1={scaleX(sReal.median)} x2={scaleX(sReal.median)} y1={topY - boxH/2} y2={topY + boxH/2} stroke="rgba(25,118,210,0.95)" strokeWidth="3" />
+                {/* label left of plot (no n) */}
+                <text x={pad - 12} y={topY + 5} fontSize="12" textAnchor="end" fill="#333">Real</text>
+                {/* median annotation above median line */}
+                <text x={scaleX(sReal.median)} y={topY - boxH/2 - 8} fontSize="11" textAnchor="middle" fill="#1976d2">med: {Math.round(sReal.median)}</text>
+              </>}
+
+              {/* Fake (bottom) horizontal box */}
+              {sFake && <>
+                <line x1={scaleX(sFake.min)} x2={scaleX(sFake.max)} y1={bottomY} y2={bottomY} stroke="#ff7043" strokeWidth="2" />
+                <line x1={scaleX(sFake.min)} x2={scaleX(sFake.min)} y1={bottomY - 10} y2={bottomY + 10} stroke="#ff7043" strokeWidth="2" />
+                <line x1={scaleX(sFake.max)} x2={scaleX(sFake.max)} y1={bottomY - 10} y2={bottomY + 10} stroke="#ff7043" strokeWidth="2" />
+                <rect x={scaleX(sFake.q1)} y={bottomY - boxH/2} width={Math.max(2, scaleX(sFake.q3) - scaleX(sFake.q1))} height={boxH} fill="rgba(255,112,67,0.12)" stroke="rgba(255,112,67,0.95)" rx="6" />
+                <line x1={scaleX(sFake.median)} x2={scaleX(sFake.median)} y1={bottomY - boxH/2} y2={bottomY + boxH/2} stroke="rgba(255,112,67,0.95)" strokeWidth="3" />
+                <text x={pad - 12} y={bottomY + 5} fontSize="12" textAnchor="end" fill="#333">Fake</text>
+                <text x={scaleX(sFake.median)} y={bottomY - boxH/2 - 8} fontSize="11" textAnchor="middle" fill="#ff7043">med: {Math.round(sFake.median)}</text>
+              </>}
+
+            </svg>
+          </Box>
+        )}
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+          Box shows Q1–Q3 with median; whiskers show min/max. Values are word counts per post.
+        </Typography>
+      </Box>
+    );
+  };
+  // --- end added component ---
 
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3, md: 4 }, py: 3 }}>
@@ -926,51 +1375,59 @@ const Insights = () => {
           <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4 }}>
             Analytics Dashboard
           </Typography>
-          <Grid container spacing={{ xs: 3, md: 4 }} sx={{ mb: 6 }} justifyContent="center">
+          <Grid container spacing={{ xs: 3, md: 4 }} sx={{ mb: 6 }} justifyContent="center" alignItems="stretch">
+            {/* Row 1: Message length distribution (BoxPlotPair) | ConfidenceDistribution */}
             <Grid item xs={12} lg={6}>
-              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center', height: 520, boxSizing: 'border-box', overflow: 'hidden' }}>
+                <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* constrain width to match reduced SVG width so the two columns fit side-by-side */}
+                  <Box sx={{ width: '100%', maxWidth: 500 }}>
+                    <BoxPlotPair
+                       endpoints={[
+                         '/history/analyses',
+                         '/history/posts',
+                         '/history/records',
+                         '/history/history',
+                         'http://127.0.0.1:8000/history/analyses'
+                       ]}
+                       items={analysisItems}
+                     />
+                   </Box>
+                 </Box>
+               </Paper>
+             </Grid>
+
+            <Grid item xs={12} lg={6}>
+              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center', height: 520, boxSizing: 'border-box', overflow: 'hidden' }}>
+                <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ConfidenceDistribution items={analysisItems} />
+                </Box>
+              </Paper>
+            </Grid>
+
+            {/* Row 2: Detection Ratio | Top 10 Distinctive words */}
+            <Grid item xs={12} lg={6}>
+              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center', height: 520, boxSizing: 'border-box', overflow: 'hidden' }}>
                 <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-                  Misinformation by Category
+                  Detection Ratio
                 </Typography>
-                <Box sx={{ height: 400 }}>
-                  <Bar data={yourCategoryData} options={chartOptions} />
+                <Box sx={{ height: 420, display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+                  <Box sx={{ width: 360, height: '100%' }}>
+                    <Pie data={yourAccuracyData} options={{ ...chartOptions, maintainAspectRatio: false }} style={{ height: '100%' }} />
+                  </Box>
                 </Box>
               </Paper>
             </Grid>
 
             <Grid item xs={12} lg={6}>
-              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
-                <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-                  Detection Accuracy
+              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center', height: 520, boxSizing: 'border-box', overflow: 'hidden' }}>
+                <Typography variant="h5" gutterBottom sx={{ mb: -4, fontWeight: 'bold' }}>
+                  Top 10 Distinctive words 
                 </Typography>
-                <Box sx={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ width: '300px', height: '300px' }}>
-                    <Pie data={yourAccuracyData} options={{ ...chartOptions, maintainAspectRatio: false }} />
-                  </div>
-                </Box>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} lg={6}>
-              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
-                <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-                  Detection Trends Over Time
-                </Typography>
-                <Box sx={{ height: 400 }}>
-                  <Line data={yourTrendData} options={chartOptions} />
-                </Box>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} lg={6}>
-              <Paper sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
-                <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-                  Confidence Distribution
-                </Typography>
-                <Box sx={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <div style={{ width: '300px', height: '300px' }}>
-                    <Doughnut data={yourConfidenceData} options={{ ...chartOptions, maintainAspectRatio: false }} />
-                  </div>
+                <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+                  <Box sx={{ width: 360, height: '100%' }}>
+                    <SavedDistinctWordsPanel userId="anon" maxItems={10} />
+                  </Box>
                 </Box>
               </Paper>
             </Grid>
@@ -982,28 +1439,44 @@ const Insights = () => {
           </Typography>
           <Paper sx={{ p: { xs: 3, sm: 4 }, mb: 4, textAlign: 'center' }}>
             <Grid container spacing={4} justifyContent="center">
+              {/* swapped: Detection performance first, then Message lengths */}
+               <Grid item xs={12} md={6}>
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    Detection performance
+                  </Typography>
+                  <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.05rem' }}>
+                    Processed <strong>{misinformationStats.total?.toLocaleString() ?? '0'}</strong> posts — <strong>{misinformationStats.fake ?? 0}</strong> labelled
+                    fake and <strong>{misinformationStats.real ?? 0}</strong> labelled real. Model accuracy (median confidence) is
+                    approximately <strong>{Number(misinformationStats.accuracy ?? 0).toFixed(1)}%</strong>. See the Confidence Distribution
+                    and Detection Ratio charts for how prediction confidence and label split contribute to this result.
+                  </Typography>
+                </Box>
+               </Grid>
+
               <Grid item xs={12} md={6}>
                 <Box sx={{ p: 2 }}>
                   <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                    Most Common Misinformation Topics
+                    Message lengths (words)
                   </Typography>
-                  <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
-                    Political content represents 32% of detected misinformation, followed by health-related
-                    misinformation at 23%. This aligns with global trends in misinformation patterns.
-                  </Typography>
+                  { /* show computed medians (words) and simple comparison + top-3 distinct words */ }
+                  { (medianWordsByLabel.real != null || medianWordsByLabel.fake != null) ? (
+                    <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.05rem' }}>
+                      Historical labelled posts show median message lengths of approximately
+                      {medianWordsByLabel.real != null ? ` ${Math.round(medianWordsByLabel.real)} words (Real)` : ''}
+                      {medianWordsByLabel.fake != null ? ` and ${Math.round(medianWordsByLabel.fake)} words (Fake)` : ''}.
+                      In this dataset Fake posts are { (medianWordsByLabel.fake != null && medianWordsByLabel.real != null)
+                        ? (medianWordsByLabel.fake > medianWordsByLabel.real ? 'longer' : (medianWordsByLabel.fake < medianWordsByLabel.real ? 'shorter' : 'similar in length'))
+                        : 'not directly comparable' } than Real posts.
+                      The three most distinctive words across the corpus are: <strong>{top3DistinctWords.join(', ') || 'n/a'}</strong>.
+                    </Typography>
+                  ) : (
+                    <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.05rem' }}>
+                      Median message lengths (in words) are shown in the box plot above. If no historical data is available a fallback sample is used.
+                    </Typography>
+                  )}
                 </Box>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ p: 2 }}>
-                  <Typography variant="h5" gutterBottom color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
-                    Detection Performance
-                  </Typography>
-                  <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
-                    Our model maintains an 87.3% accuracy rate with particularly strong performance in
-                    detecting health misinformation (92% accuracy) and political misinformation (85% accuracy).
-                  </Typography>
-                </Box>
-              </Grid>
+               </Grid>
             </Grid>
           </Paper>
         </>
@@ -1041,8 +1514,378 @@ function darkenHex(hex, percent) {
   }
 }
 
-// when picking colors for words, pass them through darkenHex(..., 16)
-// Example usage inside your WordCloud render where you map tokens -> style:
-// const base = palette[idx % palette.length];
-// const color = darkenHex(base, 16);
-// ...apply color to the word element style...
+// --- added: normalizeKey used by multiple panels (module scope) ---
+const normalizeKey = (k) => String(k || '').toLowerCase().trim();
+// --- end added --- 
+
+// --- add: ConfidenceDistribution component (exclude Low <0.5 bucket) ---
+const ConfidenceDistribution = ({ items = null }) => {
+  const extractConfidence = (it) => {
+    if (!it) return null;
+    const keys = ['confidence','score','probability','pred_confidence','prediction_confidence','confidence_score','pred_score'];
+    for (const k of keys) {
+      if (k in it && it[k] != null) {
+        let v = Number(it[k]);
+        if (Number.isNaN(v)) continue;
+        if (v > 1) v = v / 100;
+        if (v < 0) v = null;
+        return v;
+      }
+    }
+    try {
+      if (it.prediction && typeof it.prediction === 'object' && it.prediction.confidence != null) {
+        let v = Number(it.prediction.confidence);
+        if (!Number.isNaN(v)) { if (v > 1) v = v/100; return v; }
+      }
+    } catch(e){}
+    return null;
+  };
+
+  const compute = React.useMemo(() => {
+    // only three buckets: veryHigh (>0.9), high (0.7-0.9], medium [0.5-0.7]
+    const bins = { veryHigh: 0, high: 0, medium: 0 };
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      // fallback sample for three buckets
+      return { labels: ['Very High (>0.9)','High (0.7-0.9)','Medium (0.5-0.7)'], values: [20,15,40], percent: [29,21,50] };
+    }
+    for (const it of items) {
+      const v = extractConfidence(it);
+      if (v == null || !Number.isFinite(v)) continue;
+      if (v > 0.9) bins.veryHigh++;
+      else if (v > 0.7) bins.high++;
+      else if (v >= 0.5) bins.medium++;
+      // values < 0.5 are intentionally excluded
+    }
+    const totalShown = bins.veryHigh + bins.high + bins.medium || 1;
+    return {
+      labels: ['Very High (>0.9)','High (0.7-0.9)','Medium (0.5-0.7)'],
+      values: [bins.veryHigh, bins.high, bins.medium],
+      percent: [Math.round(100*bins.veryHigh/totalShown), Math.round(100*bins.high/totalShown), Math.round(100*bins.medium/totalShown)]
+    };
+  }, [items]);
+
+  const data = {
+    labels: compute.labels,
+    datasets: [{
+      data: compute.values,
+      backgroundColor: ['#2e7d32','#1976d2','#ffb300'],
+      borderWidth: 1
+    }]
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const val = ctx.raw;
+            const i = ctx.dataIndex;
+            const pct = compute.percent ? ` (${compute.percent[i]}%)` : '';
+            return `${ctx.label}: ${val}${pct}`;
+          }
+        }
+      }
+    }
+  };
+
+  return (
+    <Box sx={{ textAlign: 'center', height: 320 }}>
+      <Typography variant="h5" gutterBottom sx={{ mb: 2, fontWeight: 'bold' }}>
+        Confidence Distribution 
+      </Typography>
+      <Box sx={{ height: 220 }}>
+        <Doughnut data={data} options={options} />
+      </Box>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+      </Typography>
+    </Box>
+  );
+};
+// --- end component ---
+
+// --- add: UserWordShiftPanel (top-N most DISTINCT words via log-odds) ---
+const UserWordShiftPanel = ({ items = [], topN = 10 }) => {
+  const [input, setInput] = React.useState('');
+  const [dataReady, setDataReady] = React.useState(null);
+
+  const tokenize = (s = '') => (String(s).toLowerCase().match(/\b[a-z0-9']+\b/g) || []);
+  const getLabel = (it) => {
+    const raw = String(it.label || it.result || it.prediction || it.tag || '').toLowerCase();
+    if (raw.includes('fake') || raw === '0' || raw.includes('false')) return 'fake';
+    if (raw.includes('real') || raw === '1' || raw.includes('true')) return 'real';
+    if (it.is_fake === true || it.is_fake === 'true') return 'fake';
+    if (it.is_fake === false || it.is_fake === 'false') return 'real';
+    return null;
+  };
+
+  // compute counts and log-odds for all words in history, return top-N by abs(logodds)
+  const topDistinctWordsFromHistory = React.useCallback((N = topN, minCount = 2) => {
+    if (!Array.isArray(items) || items.length === 0) return [];
+    const cntReal = {}, cntFake = {};
+    let totalReal = 0, totalFake = 0;
+
+    for (const it of items) {
+      const label = getLabel(it);
+      if (!label) continue;
+      const toks = Array.from(new Set(tokenize(it.text || it.content || it.tweet || it.post || '')));
+      for (const w of toks) {
+        if (label === 'real') { cntReal[w] = (cntReal[w] || 0) + 1; totalReal++; }
+        else if (label === 'fake') { cntFake[w] = (cntFake[w] || 0) + 1; totalFake++; }
+      }
+    }
+
+    totalReal = Math.max(totalReal, 1);
+    totalFake = Math.max(totalFake, 1);
+    const prior = 0.01;
+    const allWords = new Set([...Object.keys(cntReal), ...Object.keys(cntFake)]);
+    const results = [];
+
+    for (const w of allWords) {
+      const sum = (cntReal[w] || 0) + (cntFake[w] || 0);
+           if (sum < minCount) continue; // skip rare words
+      const A = (cntReal[w] || 0) + prior;
+      const B = (cntFake[w] || 0) + prior;
+      const oddsA = A / Math.max(1e-9, (totalReal - A));
+      const oddsB = B / Math.max(1e-9, (totalFake - B));
+      const logodds = Math.log(Math.max(1e-9, oddsA / oddsB));
+      results.push({ word: w, logodds, countReal: cntReal[w]||0, countFake: cntFake[w]||0, sum });
+    }
+
+    results.sort((a, b) => Math.abs(b.logodds) - Math.abs(a.logodds));
+    return results.slice(0, N);
+  }, [items, topN]);
+
+  const computeLogOddsForList = React.useCallback((wordsList) => {
+    if (!Array.isArray(items) || items.length === 0 || !wordsList || wordsList.length === 0) return null;
+    const all = topDistinctWordsFromHistory(items.length, 1);
+    const map = new Map(all.map(r => [r.word, r]));
+    const filtered = wordsList.map(w => map.get(w)).filter(Boolean).slice(0, topN);
+    return filtered.length ? filtered : null;
+  }, [items, topDistinctWordsFromHistory, topN]);
+
+  const useDistinctTop = async () => {
+    const top = topDistinctWordsFromHistory(topN, 2);
+    setInput(top.map(t => t.word).join(', '));
+    setDataReady(top);
+
+    // persist top list to server (anon key)
+    try {
+      const payload = top.map(t => ({ word: t.word, logodds: Number(t.logodds || 0), count: Number(t.sum || t.countReal || t.countFake || 0) }));
+      await saveUserDistinctWords(payload, 'anon');
+      window.dispatchEvent(new Event('distinct-words-saved'));
+    } catch (e) {
+      console.warn('saveUserDistinctWords failed', e);
+    }
+  };
+
+  const applyInput = async () => {
+    const arr = input.split(',').map(s => s.trim().toLowerCase()).filter(Boolean).slice(0, topN);
+    const res = computeLogOddsForList(arr) || [];
+    setDataReady(res);
+
+    // persist applied list too
+    if (res && res.length) {
+      try {
+        const payload = res.map(t => ({ word: t.word, logodds: Number(t.logodds || 0), count: Number(t.sum || t.countReal || t.countFake || 0) }));
+        await saveUserDistinctWords(payload, 'anon');
+        window.dispatchEvent(new Event('distinct-words-saved'));
+      } catch (e) {
+        console.warn('saveUserDistinctWords failed', e);
+      }
+    }
+  };
+
+  const chartData = React.useMemo(() => {
+    if (!dataReady || dataReady.length === 0) return null;
+    const labels = dataReady.map(r => r.word);
+    const fakeVals = dataReady.map(r => (r.logodds < 0 ? -Math.abs(r.logodds) : 0));
+    const realVals = dataReady.map(r => (r.logodds > 0 ? r.logodds : 0));
+    return {
+      labels,
+      datasets: [
+        { label: 'Fake (left)', data: fakeVals, backgroundColor: 'rgba(255,112,67,0.9)' },
+        { label: 'Real (right)', data: realVals, backgroundColor: 'rgba(25,118,210,0.9)' }
+ ]
+    };
+  }, [dataReady]);
+
+  const chartOptions = React.useMemo(() => ({
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: { callback: v => Number(v).toFixed(2) },
+        grid: { drawBorder: false }
+      },
+      y: { grid: { display: false }, ticks: { autoSkip: false } }
+    },
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const v = ctx.raw;
+            return `${ctx.dataset.label}: ${Math.abs(Number(v)).toFixed(2)}`;
+          }
+        }
+      }
+    }
+  }), []);
+
+  return (
+    <Box sx={{ p: 2 }}>
+      <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+        <TextField
+          size="small"
+          fullWidth
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Comma-separated words (or click 'Use top 10 distinct' button)"
+        />
+        <Button variant="outlined" onClick={useDistinctTop}>Use top 10 distinct</Button>
+        <Button variant="contained" onClick={ applyInput}>Apply</Button>
+      </Stack>
+
+      {!chartData ? (
+        <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+          Enter words or click "Use top 10 distinct" to build a focused word-shift.
+        </Box>
+      ) : (
+        <Box sx={{ height: 360 }}>
+          <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>Distinctive words (user-selected)</Typography>
+          <Bar data={chartData} options={chartOptions} />
+        </Box>
+      )}
+    </Box>
+  );
+};
+// --- end UserWordShiftPanel ---
+
+// --- add: SavedDistinctWordsPanel (fetches saved per-user distinct words and renders WordShiftDiverging) ---
+const SavedDistinctWordsPanel = ({ userId = 'anon', maxItems = 20, items = null }) => {
+  const [loadingSaved, setLoadingSaved] = useState(true);
+  const [errSaved, setErrSaved] = useState(null);
+  const [topByLabel, setTopByLabel] = useState({ real: [], fake: [] });
+
+  const fetchHistoryItems = async () => {
+    const endpoints = [
+      '/history?limit=1000',
+      '/history/analyses?limit=1000',
+      'http://127.0.0.1:8000/history?limit=1000',
+      '/history',
+      '/history/analyses'
+    ];
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep, { credentials: 'same-origin' });
+        if (!res.ok) continue;
+        const payload = await res.json();
+        const list = Array.isArray(payload) ? payload : (payload.items || payload.analyses || payload.data || null);
+        if (Array.isArray(list) && list.length) return list;
+      } catch (e) {
+        // try next
+      }
+    }
+    return null;
+  };
+
+  const load = async () => {
+    setLoadingSaved(true);
+    setErrSaved(null);
+    try {
+      const rawItems = Array.isArray(items) && items.length ? items : (await fetchHistoryItems());
+      if (!rawItems || !rawItems.length) {
+        setTopByLabel({ real: [], fake: [] });
+        setLoadingSaved(false);
+        return;
+      }
+
+      // Aggregate: for each word keep the single occurrence with largest absolute contribution
+      const agg = Object.create(null);
+      for (const it of rawItems) {
+        const wc = it.word_contributions || it.wordContrib || it.wordContributions || it.word_contrib || null;
+        if (!wc || typeof wc !== 'object') continue;
+        for (const [rawWord, vRaw] of Object.entries(wc)) {
+          const w = normalizeKey(rawWord);
+          const v = Number(vRaw || 0);
+          if (!w) continue;
+          const absv = Math.abs(v);
+          if (!Number.isFinite(absv) || absv === 0) continue;
+          const cur = agg[w];
+          if (!cur || absv > cur.maxAbs) {
+            agg[w] = { word: w, maxAbs: absv, sign: Math.sign(v) || 1, count: (cur?.count || 0) + 1, sampleVal: v };
+          } else {
+            agg[w].count = (agg[w].count || 0) + 1;
+          }
+        }
+      }
+
+      // Build array, sort by maxAbs desc, take top N
+      const arr = Object.values(agg);
+      arr.sort((a, b) => b.maxAbs - a.maxAbs);
+      const top = arr.slice(0, maxItems);
+
+      // split into real/fake lists for WordShiftDiverging format
+      const real = [];
+      const fake = [];
+      for (const it of top) {
+        if (it.sign >= 0) {
+          real.push({ word: it.word, log_odds: Number(it.maxAbs), count: it.count || 0 });
+        } else {
+          fake.push({ word: it.word, log_odds: Number(it.maxAbs), count: it.count || 0 });
+        }
+      }
+
+      setTopByLabel({ real, fake });
+    } catch (e) {
+      setErrSaved(e.message || 'Failed to load history');
+      setTopByLabel({ real: [], fake: [] });
+    } finally {
+      setLoadingSaved(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    const onSaved = () => load();
+    window.addEventListener('distinct-words-saved', onSaved);
+    return () => window.removeEventListener('distinct-words-saved', onSaved);
+  }, [userId, items, maxItems]);
+
+  const handleRefresh = async () => { await load(); };
+  const handleDelete = async () => { setTopByLabel({ real: [], fake: [] }); };
+
+  const dataForWordShift = useMemo(() => ({ top_by_label: topByLabel }), [topByLabel]);
+
+  return (
+    <Box sx={{ p: 0, height: '100%', overflow: 'hidden' }}>
+      {loadingSaved ? (
+        <Box sx={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : errSaved ? (
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Typography color="error">{errSaved}</Typography>
+        </Box>
+      ) : ((!dataForWordShift.top_by_label) || (dataForWordShift.top_by_label.real.length === 0 && dataForWordShift.top_by_label.fake.length === 0)) ? (
+        <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
+          <Typography>No distinctive words found in history.</Typography>
+        </Box>
+      ) : (
+        <Box sx={{ mt: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          {/* match the height used for the sibling Detection Ratio panel (420) so charts align */}
+          <Box sx={{ width: '100%', maxWidth: 980, height: 420 }}>
+            <WordShiftDiverging data={dataForWordShift} maxItems={maxItems} containerHeight={420} />
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
+};
+// --- end SavedDistinctWordsPanel ---
+

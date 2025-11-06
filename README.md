@@ -1,247 +1,189 @@
-# How to setup the server
-# Start the server
-# Start React.js
+# COS30049 Assignment 3 - Misinformation Detection Platform
 
-# COS30049 Assignment 3 - Requirements Compliance Report
+A full-stack web application that leverages machine learning to detect misinformation in text content, built with React.js frontend and FastAPI backend.
 
-## 📋 **Requirements Overview**
+### Prerequisites
+- Node.js (v16+ recommended)
+- Python 3.8+
+- npm
 
-This document verifies that all assignment requirements have been successfully implemented.
+### Installation & Setup
 
----
+1. **Unzip the zip folder**
+   ```
+   unzip the zipped folder
+   cd 'folder directory'
+   ```
 
-## 🎯 **1. Front-End Development (React.js) - ✅ COMPLETED**
+2. **Frontend Setup**
+   ```bash
+   cd client
+   npm install
+   npm start
+   ```
+   The React app will run on `http://localhost:3000`
 
-### ✅ **User Input Form with Validation**
-- **Location**: `client/src/pages/MisinformationDetector.js`
-- **Implementation**: 
-  - Enhanced TextField with real-time validation
-  - Character count display (0-280 characters)
-  - Error handling for empty, too short, too long, and invalid content
-  - Warning system for URLs, excessive punctuation
-  - Visual feedback with error states and helper text
+3. **Backend Setup**
+   ```bash
+   cd server
+   pip install -r requirements.txt
+   uvicorn main:app --reload
+   ```
+   The FastAPI server will run on `http://localhost:8000`
 
-### ✅ **Three Types of Data Visualization Charts** (HD-Level)
-- **Location**: `client/src/pages/insights.js`
-- **Implementation**:
-  1. **Bar Chart**: Misinformation by Category (Chart.js)
-  2. **Pie Chart**: Detection Accuracy Distribution (Chart.js)  
-  3. **Line Chart**: Detection Trends Over Time (Chart.js)
-  4. **Doughnut Chart**: Confidence Distribution (Chart.js) - *BONUS*
+## Project Overview
 
-### ✅ **Responsive User Interface**
-- **Implementation**: 
-  - Material-UI responsive breakpoints (`xs`, `sm`, `md`, `lg`)
-  - Mobile-first design approach
-  - Responsive grid layouts and padding
-  - Touch-friendly interface elements
+This application provides an intuitive interface for users to analyze text content for potential misinformation using trained machine learning models. It features real-time analysis, comprehensive data visualizations, and a complete analysis history management system.
 
-### ✅ **Seamless API Integration**
-- **Implementation**:
-  - GET requests for statistics and history
-  - POST requests for predictions
-  - PUT requests for user feedback
-  - DELETE requests for data management
-  - Error handling and loading states
+### Key Features
 
-### ✅ **UI/UX Principles**
-- **Implementation**:
-  - Consistent Material Design language
-  - Clear navigation structure
-  - Loading indicators and feedback
-  - Accessibility considerations
-  - Professional color scheme and typography
+- **Real-time Text Analysis**: Instant misinformation detection with confidence scores
+- **Interactive Data Visualizations**: Four different chart types showing analysis trends
+- **Responsive Design**: Mobile-first approach with Material-UI components
+- **Complete CRUD Operations**: Full analysis history management
+- **Advanced Form Validation**: Real-time input validation with visual feedback
+- **Professional UI/UX**: Clean, intuitive interface following Material Design principles
 
----
+## Architecture
 
-## 🔧 **2. Back-End Development (FastAPI) - ✅ COMPLETED**
+### Frontend (React.js)
+- **Framework**: React 19.2.0 with functional components and hooks
+- **UI Library**: Material-UI 7.3.4 for consistent design system
+- **Routing**: React Router 7.9.4 for navigation
+- **Charts**: Chart.js 4.5.1 with react-chartjs-2 for data visualization
+- **HTTP Client**: Axios for API communication
 
-### ✅ **FastAPI Server with Multiple HTTP Methods**
-- **Location**: `server/routes/enhanced_predict_route.py`
-- **Implementation**:
-  - **POST** `/predict/` - Text analysis
-  - **GET** `/predict/history` - Fetch analysis history
-  - **GET** `/predict/history/{id}` - Get specific analysis
-  - **GET** `/predict/stats` - Get statistics
-  - **PUT** `/predict/history/{id}/feedback` - Update feedback
-  - **DELETE** `/predict/history/{id}` - Delete analysis
-  - **DELETE** `/predict/history` - Clear all history
+### Backend (FastAPI)
+- **Framework**: FastAPI with Python 3.8+
+- **AI/ML**: Scikit-learn for machine learning model integration
+- **Data Validation**: Pydantic for request/response validation
+- **Model**: Logistic Regression classifier with TF-IDF vectorization
 
-### ✅ **AI Model Integration**
-- **Location**: `server/model/model.py`
-- **Implementation**: 
-  - Efficient model loading with lazy initialization
-  - Integration with logistic regression classifier
-  - Vectorizer for text preprocessing
-
-### ✅ **API Endpoints for Data Handling**
-- **Implementation**:
-  - Pydantic models for request/response validation
-  - JSON serialization
-  - Pagination support for large datasets
-  - Structured response formats
-
-### ✅ **Robust Error Handling**
-- **Implementation**:
-  - Comprehensive exception management
-  - HTTP status code compliance
-  - Detailed error messages
-  - Logging system for debugging
-  - Input validation at multiple levels
-
----
-
-## 🤖 **3. AI Model Integration - ✅ COMPLETED**
-
-### ✅ **Efficient Model Execution**
-- **Location**: `server/model/model.py`
-- **Implementation**:
-  - Lazy loading of model artifacts
-  - Memory-efficient single instance pattern
-  - Fast prediction response times
-  - Proper resource management
-
-### ✅ **Data Preprocessing Logic**
-- **Implementation**:
-  ```python
-  def preprocess_text(text: str) -> str:
-      # Convert to lowercase
-      # Remove excessive whitespace
-      # Handle URLs with placeholders
-      # Normalize mentions and hashtags
-      # Clean excessive punctuation
-      # Handle repeated characters
-      # Final cleanup
-  ```
-
-### ✅ **Data Postprocessing Logic**  
-- **Implementation**:
-  ```python
-  def postprocess_prediction(label: str, confidence: float):
-      # Normalize label names for display
-      # Ensure confidence is in valid range
-      # Round confidence to 3 decimal places
-      # Return consistent format
-  ```
-
----
-
-## 📁 **File Structure Overview**
+## Project Structure
 
 ```
 COS30049-Assignment-3/
 ├── client/                          # React Frontend
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── manifest.json
+│   │   └── robots.txt
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── Navigation.js        # Navigation component
+│   │   │   ├── Navigation.js        # App navigation
+│   │   │   ├── footer.js           # Footer component
+│   │   │   ├── userDistinctWords.js # Word analysis component
+│   │   │   └── WordContributionsChart.jsx # Chart component
 │   │   ├── pages/
 │   │   │   ├── home.js              # Landing page
-│   │   │   ├── about.js             # Project information
+│   │   │   ├── about.js             # About page
 │   │   │   ├── insights.js          # Data visualizations
-│   │   │   ├── MisinformationDetector.js  # Main analysis tool
+│   │   │   ├── MisinformationDetector.js # Main analysis tool
 │   │   │   └── AnalysisHistory.js   # History management
-│   │   ├── App.js                   # Main app with routing
-│   │   ├── App.css                  # Enhanced styling
-│   │   └── theme.css                # Theme variables
-│   └── package.json                 # Dependencies (React, Chart.js, MUI)
+│   │   ├── App.js                   # Main app component
+│   │   ├── App.css                  # Application styles
+│   │   ├── theme.css                # Theme variables
+│   │   └── index.js                 # App entry point
+│   └── package.json                 # Frontend dependencies
 ├── server/                          # FastAPI Backend
 │   ├── model/
-│   │   ├── model.py                 # Enhanced AI model integration
-│   │   ├── vectorizer.pkl           # Text vectorizer
-│   │   └── logistic_regression.pkl  # Trained model
+│   │   ├── __init__.py
+│   │   └── model.py                 # AI model integration
 │   ├── routes/
-│   │   └── enhanced_predict_route.py # All API endpoints
+│   │   ├── history_routes.py        # History management routes
+│   │   └── predict_route.py         # Prediction routes
 │   ├── main.py                      # FastAPI application
 │   └── requirements.txt             # Python dependencies
 └── README.md                        # Project documentation
 ```
 
----
+## Core Features
 
-## 🚀 **Key Features Implemented**
+### 1. Misinformation Detection
+- **Location**: `client/src/pages/MisinformationDetector.js`
+- Real-time text analysis with character limit (280 characters)
+- Advanced input validation with visual feedback
+- Confidence score display with color-coded results
+- Warning system for URLs and suspicious patterns
 
-### **Advanced Frontend Features:**
-- ✅ Real-time form validation with visual feedback
-- ✅ Four different chart types (Bar, Pie, Line, Doughnut)
-- ✅ Responsive design for all device sizes
-- ✅ Complete CRUD operations via API
-- ✅ Professional UI with Material Design
-- ✅ Loading states and error handling
+### 2. Data Visualizations
+- **Location**: `client/src/pages/insights.js`
+- **Bar Chart**: Misinformation detection by category
+- **Pie Chart**: Detection accuracy distribution
+- **Line Chart**: Detection trends over time
+- **Doughnut Chart**: Confidence score distribution
 
-### **Robust Backend Features:**
-- ✅ Seven different API endpoints
-- ✅ Four HTTP methods (GET, POST, PUT, DELETE)
-- ✅ Comprehensive input validation
-- ✅ Structured error handling with logging
-- ✅ Efficient AI model integration
-- ✅ Data persistence and management
+### 3. Analysis History
+- **Location**: `client/src/pages/AnalysisHistory.js`
+- Complete CRUD operations for analysis records
+- Searchable and filterable history
+- Export functionality for analysis data
+- User feedback collection system
 
-### **Enhanced AI Integration:**
-- ✅ Advanced text preprocessing pipeline
-- ✅ Confidence score calculation
-- ✅ Output postprocessing for consistency
-- ✅ Efficient model loading and execution
-- ✅ Comprehensive logging and monitoring
+### 4. Responsive Design
+- Mobile-first approach with Material-UI breakpoints
+- Touch-friendly interface elements
+- Adaptive layouts for all screen sizes
+- Professional color scheme and typography
 
----
+## API Endpoints
 
-## 📊 **Technical Specifications**
+### Prediction Routes
+- `POST /predict/` - Analyze text for misinformation
+- `GET /predict/history` - Fetch analysis history
+- `GET /predict/history/{id}` - Get specific analysis
+- `PUT /predict/history/{id}/feedback` - Update user feedback
+- `DELETE /predict/history/{id}` - Delete analysis
+- `DELETE /predict/history` - Clear all history
 
-### **Frontend Technologies:**
-- React.js 19.2.0
-- Material-UI 7.3.4
-- Chart.js 4.5.1 with react-chartjs-2
-- React Router 7.9.4
-- Axios for API calls
+### Statistics Routes
+- `GET /predict/stats` - Get detection statistics
 
-### **Backend Technologies:**
-- FastAPI (latest)
-- Pydantic for data validation
-- Scikit-learn for ML model
-- Pickle for model serialization
-- Python logging for monitoring
+## AI Model Integration
 
-### **Development Features:**
-- CORS enabled for development
-- Hot reload for both frontend and backend
-- Comprehensive error handling
-- Structured logging system
-- Type hints throughout codebase
+### Model Architecture
+- **Algorithm**: Logistic Regression classifier
+- **Vectorization**: TF-IDF (Term Frequency-Inverse Document Frequency)
+- **Features**: Text preprocessing pipeline with advanced cleaning
 
----
+### Text Preprocessing Pipeline
+1. Convert to lowercase
+2. Remove excessive whitespace
+3. Handle URLs with placeholders
+4. Normalize mentions and hashtags
+5. Clean excessive punctuation
+6. Handle repeated characters
+7. Final text cleanup and normalization
 
-## ✅ **Requirements Compliance Summary**
+### Model Performance
+- **Accuracy**: Optimized for real-world misinformation detection
+- **Confidence Scoring**: Probability-based confidence with 3-decimal precision
+- **Response Time**: Sub-second prediction times with lazy loading
 
-| Requirement | Status | Location | Notes |
-|------------|--------|----------|-------|
-| User Input Form with Validation | ✅ Complete | `MisinformationDetector.js` | Enhanced validation |
-| Two Data Visualization Charts | ✅ Complete | `insights.js` | Four charts implemented |
-| Responsive UI Design | ✅ Complete | All pages | Material-UI breakpoints |
-| API Integration | ✅ Complete | All components | Full CRUD operations |
-| UI/UX Principles | ✅ Complete | Entire application | Material Design |
-| FastAPI Server | ✅ Complete | `main.py` | Production ready |
-| Multiple HTTP Methods | ✅ Complete | `enhanced_predict_route.py` | GET, POST, PUT, DELETE |
-| AI Model Integration | ✅ Complete | `model.py` | From Assignment 2 |
-| API Endpoints | ✅ Complete | `enhanced_predict_route.py` | Seven endpoints |
-| Error Handling | ✅ Complete | Backend & Frontend | Comprehensive |
-| Efficient Model Execution | ✅ Complete | `model.py` | Optimized loading |
-| Data Preprocessing | ✅ Complete | `model.py` | Advanced pipeline |
-| Data Postprocessing | ✅ Complete | `model.py` | Output formatting |
 
----
+## Features & Capabilities
 
-## 🎓 **HD-Level Features Bonus:**
+### Assignment Requirements Met
 
-1. **Third Data Visualization Chart** - Doughnut chart for confidence distribution
-2. **Advanced Form Validation** - Real-time validation with warnings and errors
-3. **Complete CRUD Operations** - Full data management system
-4. **Professional Error Handling** - Comprehensive exception management
-5. **Enhanced AI Pipeline** - Advanced preprocessing and postprocessing
-6. **Responsive Design** - Mobile-first approach with breakpoints
-7. **Logging System** - Full application monitoring
+| Requirement | Implementation | Status |
+|------------|----------------|---------|
+| **User Input Form with Validation** | Real-time validation, character limits, error handling | ✅ Complete |
+| **Data Visualization Charts** | 4 chart types (Bar, Pie, Line, Doughnut) | ✅ Complete |
+| **Responsive UI Design** | Material-UI breakpoints, mobile-first | ✅ Complete |
+| **API Integration** | Full CRUD operations with error handling | ✅ Complete |
+| **UI/UX Principles** | Material Design, accessibility, consistency | ✅ Complete |
+| **FastAPI Server** | Production-ready with comprehensive routing | ✅ Complete |
+| **Multiple HTTP Methods** | GET, POST, PUT, DELETE operations | ✅ Complete |
+| **AI Model Integration** | Optimized loading, preprocessing pipeline | ✅ Complete |
+| **API Endpoints** | 7+ endpoints for complete functionality | ✅ Complete |
+| **Error Handling** | Frontend & backend comprehensive handling | ✅ Complete |
 
----
+### Additional Features
 
-## 🚀 **All Requirements Successfully Implemented!**
-
-This implementation exceeds the assignment requirements and provides a production-ready misinformation detection platform with advanced features, robust error handling, and professional user experience.
+- **Analysis History Management**: Complete CRUD operations for user analysis records
+- **Advanced Text Preprocessing**: Multi-stage text cleaning and normalization
+- **Real-time Feedback System**: User can provide feedback on predictions
+- **Export Functionality**: Download analysis results in various formats
+- **Progressive Web App**: Responsive design with offline capabilities
+- **Accessibility**: WCAG compliant design with keyboard navigation
+- **Performance Optimization**: Lazy loading, code splitting, efficient rendering
